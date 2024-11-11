@@ -19,7 +19,6 @@
 #include <Beaver/enum_bitops.hpp>
 #include <utilities.hpp>
 
-
 // wrappers
 #include <sdlwrapper/sdlwrapper.hpp>
 #include <tiledwrapper/tiledwrapper.hpp>
