@@ -8,8 +8,8 @@ A game engine based on SDL
 
 
 # How to use
-- Put 'beaver' in your directory and 'add_subdirectory(beaver_directory)'
-- Link your game against 'beaver' in your CMakeLists.txt
+- Put 'beaver' in your directory and `add_subdirectory(beaver_directory)`
+- Link your game against `beaver` in your CMakeLists.txt
 ```
 target_link_libraries(Game PRIVATE beaver)
 ```
