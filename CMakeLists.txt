@@ -16,7 +16,6 @@ set(UTILITIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/utilities)
 
 add_library(beaver SHARED ${BEAVER_SRC_DIR}/core.cpp)
 target_include_directories(beaver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include 
-											${VENDOR_DIR} 
 											${UTILITIES_DIR})
 
 add_subdirectory(lib)

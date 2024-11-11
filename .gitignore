@@ -1,2 +1,6 @@
 build/
 .cache/
+vendor/SDL/SDL2
+vendor/SDL/SDL2_image
+vendor/SDL/SDL2_ttf
+vendor/SDL/SDL2_mixer

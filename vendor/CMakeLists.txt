@@ -1,3 +1,4 @@
+add_subdirectory(SDL)
 add_library(imgui_sdl SHARED
             ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_draw.cpp
