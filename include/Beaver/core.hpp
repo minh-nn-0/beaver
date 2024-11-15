@@ -43,17 +43,19 @@ namespace sdl
 			const std::vector<sdl::texture*>&); 
 	void draw_with_cam(const beaver::camera2D&,
 			SDL_Renderer*, const sdl::drawdata&);
+
+	mmath::ivec2 render_output_size(const sdl::app&);
 };
 
 namespace beaver
 {
 	constexpr unsigned MSPF_60 = 17; //milliseconds per frame
 	constexpr unsigned MSPF_30 = 34; //milliseconds per frame
+	
 	struct sdlgame
 	{
 		using assets_manager = beaver::resource::manager<sdl::texture, sdl::soundchunk, sdl::music, sdl::font>;
 		
-
 		sdlgame(const std::string& title, int window_width, int window_height, int FPS = 60);
 		
 		bool 								_running {true};
@@ -61,11 +63,16 @@ namespace beaver
 		beaver::controller 					_ctl;
 		sdl::app 							_sdl;
 		assets_manager 						_assets;
-		// ideally, will call once every 1000/fps (about 17 milliseconds for 60fps)
-		std::function<bool(const float)> 	_updatef;
-		std::function<void()> 				_drawf;
 		
-		void run();
+		//// ideally, will call once every 1000/fps (about 17 milliseconds for 60fps)
+		//std::function<bool(const float)> 	_updatef;
+		//std::function<void()> 				_drawf;
+		//
+		//void run();
 	};
+
+	void init_imgui(sdlgame&);
+	
+	void run_game_loop(sdlgame&, const std::function<bool(float)>&, const std::function<void()>&);
 };
 #endif

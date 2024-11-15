@@ -44,7 +44,29 @@ namespace beaver
 		// return hour, minute, second
 		std::array<unsigned, 3> get_time(){return {_h, _m, _s};};
 	};
-
+	
+	namespace timer
+	{
+		// use milliseconds
+		struct countdown
+		{
+			unsigned _limit;
+			unsigned _elapsed {0};
+			void reset(unsigned limit)
+			{
+				_elapsed = 0;
+				_limit = limit;
+			};
+			void update(float dtr)
+			{
+				_elapsed += dtr/60;
+			};
+			bool running()
+			{
+				return _limit > _elapsed;
+			};
+		};
+	};
 };
 
 #endif

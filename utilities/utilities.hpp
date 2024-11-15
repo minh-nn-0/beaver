@@ -4,7 +4,9 @@
 #include <array>
 #include <algorithm>
 #include <bitset>
-
+#include <vector>
+#include <filesystem>
+#include <fstream>
 namespace utils
 {
 	inline std::array<int,4> hex_to_rgba(const std::string& hex) {
@@ -103,7 +105,28 @@ namespace utils
 		(bitset.reset(Bits),...);
 	};
 
+	inline std::vector<std::vector<std::string>> parse_tsv(const std::filesystem::path& file)
+	{
+		std::vector<std::vector<std::string>> rs;
+		std::ifstream f {file};
 
+		std::string line;
+		while (std::getline(f,line))
+		{
+			std::vector<std::string> fields;
+			while (line.find_first_of('\t') != std::string::npos)
+			{
+				auto tpos = line.find_first_of('\t');
+				fields.emplace_back(line.substr(0, tpos));
+				line = line.substr(tpos + 1);
+			};
+			rs.push_back(fields);
+		};
+
+		return rs;
+	};
+
+;
 };
 
 #endif

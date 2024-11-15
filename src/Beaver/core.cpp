@@ -76,6 +76,15 @@ void sdl::draw_with_cam(const beaver::camera2D& cam,
 	sdl::draw(rdr, ddata_with_cam);
 
 };
+
+mmath::ivec2 sdl::render_output_size(const sdl::app& app)
+{
+	mmath::ivec2 rs;
+
+	SDL_GetRendererOutputSize(app._renderer, &rs.x, &rs.y);
+
+	return rs;
+};
 //void draw_tilelayer(SDL_Renderer* rdr,const tiled::tilelayer& tl, const tiled::tileset& ts)
 //{
 //	const auto& [opacity, parallax, offset, tint] = tl._drawdata;
@@ -113,9 +122,24 @@ void sdl::draw_with_cam(const beaver::camera2D& cam,
 beaver::sdlgame::sdlgame(const std::string& title, int ww, int wh, int FPS)
 	: _sdl(title.c_str(), ww, wh), _fpstracker(beaver::FPS_tracker{._FPS = FPS})
 {
+#ifndef NDEBUG
+	beaver::init_imgui(*this);
+#endif
 };
 
-void beaver::sdlgame::run()
+//void beaver::sdlgame::run()
+//{
+//
+//	_fpstracker.reset();
+//	
+//	SDL_Event e;
+//	while (_running)
+//	{
+//
+//	}
+//};
+
+void beaver::init_imgui(beaver::sdlgame& game)
 {
 
 #ifndef NDEBUG
@@ -131,24 +155,37 @@ void beaver::sdlgame::run()
     //ImGui::StyleColorsLight();
 
     // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForSDLRenderer(_sdl._window, _sdl._renderer);
-    ImGui_ImplSDLRenderer2_Init(_sdl._renderer);
+    ImGui_ImplSDL2_InitForSDLRenderer(game._sdl._window, game._sdl._renderer);
+    ImGui_ImplSDLRenderer2_Init(game._sdl._renderer);
 #endif
+};
 
-	_fpstracker.reset();
-	
-	SDL_Event e;
-	while (_running)
+void beaver::run_game_loop(beaver::sdlgame& game, 
+							const std::function<bool(float)>& updatef, 
+							const std::function<void()>& drawf)
+{
+	game._fpstracker.reset();
+
+	SDL_Event sdlevent;
+
+	bool loop_running {true};
+
+	while (loop_running)
 	{
-
-		if (_fpstracker.new_frame_should_start())
+		
+		if (game._fpstracker.new_frame_should_start())
 		{
-			_ctl.swap();
-			while (SDL_PollEvent(&e))
+			game._ctl.swap();
+			while (SDL_PollEvent(&sdlevent))
 			{
-				ImGui_ImplSDL2_ProcessEvent(&e);
-				_ctl.update(e);
-				if (e.type == SDL_QUIT) _running = false;
+				ImGui_ImplSDL2_ProcessEvent(&sdlevent);
+				game._ctl.update(sdlevent);
+				if (sdlevent.type == SDL_QUIT) 
+				{
+					//TODO: handle quit
+					loop_running = false;
+					game._running = false;
+				};
 			};
 
 #ifndef NDEBUG
@@ -159,19 +196,21 @@ void beaver::sdlgame::run()
 #endif
 			// Normally, dt_ratio() will return 1, if lag, return > 1, if too fast, return < 1
 			// use dt_ratio in game logic is like "how many pixel a character move in one frame"
-			if (!_updatef(_fpstracker.dt_ratio())) _running = false;
-			_drawf();
+			if (!updatef(game._fpstracker.dt_ratio())) loop_running = false;
+			drawf();
 
 #ifndef NDEBUG
-			SDL_RenderSetScale(_sdl._renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+			ImGuiIO& io = ImGui::GetIO();
+			SDL_RenderSetScale(game._sdl._renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
 			ImGui::Render();
-			ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), _sdl._renderer);
+			ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), game._sdl._renderer);
 #endif
 
-        	SDL_RenderPresent(_sdl._renderer);
+        	SDL_RenderPresent(game._sdl._renderer);
 			
-			_fpstracker.end_frame();
+			game._fpstracker.end_frame();
 		};
-	}
+	};
+
 };
 
