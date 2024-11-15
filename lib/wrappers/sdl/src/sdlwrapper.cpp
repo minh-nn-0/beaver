@@ -46,8 +46,8 @@ void sdl::draw(SDL_Renderer* rdr,
 		double angle, 
 		const SDL_FPoint& pivot) 
 {
-	
-	SDL_RenderCopyExF(rdr, tex, NULL, &dst, 0, &pivot, static_cast<SDL_RendererFlip>(flags));
+	const SDL_FRect* dst_ = dst.w == 0 ? nullptr : &dst;
+	SDL_RenderCopyExF(rdr, tex, nullptr, dst_, 0, &pivot, static_cast<SDL_RendererFlip>(flags));
 };
 
 void sdl::draw(SDL_Renderer* rdr,
