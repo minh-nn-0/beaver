@@ -62,8 +62,6 @@ namespace beaver
 		beaver::FPS_tracker 				_fpstracker;
 		beaver::controller 					_ctl;
 		sdl::app 							_sdl;
-		assets_manager 						_assets;
-		
 		//// ideally, will call once every 1000/fps (about 17 milliseconds for 60fps)
 		//std::function<bool(const float)> 	_updatef;
 		//std::function<void()> 				_drawf;
