@@ -1,0 +1,6 @@
+@startuml
+
+:Init beaver::sdlgame;
+
+
+@enduml

@@ -45,6 +45,17 @@ namespace sdl
 			SDL_Renderer*, const sdl::drawdata&);
 
 	mmath::ivec2 render_output_size(const sdl::app&);
+
+	sdl::texture render_text_solid(SDL_Renderer*, 
+			const sdl::font&, 
+			const std::string&, 
+			const std::array<unsigned char, 4>&, //color
+			int wraplength = 0);
+	sdl::texture render_text_blended(SDL_Renderer*,
+			const sdl::font&, 
+			const std::string&, 
+			const std::array<unsigned char, 4>&,
+			int wraplength = 0);
 };
 
 namespace beaver
@@ -52,6 +63,13 @@ namespace beaver
 	constexpr unsigned MSPF_60 = 17; //milliseconds per frame
 	constexpr unsigned MSPF_30 = 34; //milliseconds per frame
 	
+	struct gameloop
+	{
+		std::function<void()> _initf;
+		std::function<bool(float)> _updatef;
+		std::function<void()> _drawf;
+		std::function<void()> _exitf;
+	};
 	struct sdlgame
 	{
 		using assets_manager = beaver::resource::manager<sdl::texture, sdl::soundchunk, sdl::music, sdl::font>;
@@ -71,6 +89,6 @@ namespace beaver
 
 	void init_imgui(sdlgame&);
 	
-	void run_game_loop(sdlgame&, const std::function<bool(float)>&, const std::function<void()>&);
+	void run_game_loop(sdlgame&, const gameloop&);
 };
 #endif

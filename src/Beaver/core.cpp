@@ -85,6 +85,38 @@ mmath::ivec2 sdl::render_output_size(const sdl::app& app)
 
 	return rs;
 };
+
+
+sdl::texture sdl::render_text_solid(SDL_Renderer* rdr, 
+		const sdl::font& font, 
+		const std::string& content, 
+		const std::array<unsigned char, 4>& color,
+		int wraplength)
+{
+	SDL_Color fg {color[0], color[1], color[2], color[3]};
+	SDL_Surface* temp;
+	if (wraplength == 0) temp = TTF_RenderUTF8_Solid(font, content.c_str(), fg);
+	else temp = TTF_RenderUTF8_Solid_Wrapped(font, content.c_str(), fg, wraplength);
+	
+	sdl::texture rs {SDL_CreateTextureFromSurface(rdr, temp)};
+	SDL_FreeSurface(temp);
+	return rs;
+};
+sdl::texture sdl::render_text_blended(SDL_Renderer* rdr,
+		const sdl::font& font, 
+		const std::string& content, 
+		const std::array<unsigned char, 4>& color,
+		int wraplength)
+{
+	SDL_Color fg {color[0], color[1], color[2], color[3]};
+	SDL_Surface* temp;
+	if (wraplength == 0) temp = TTF_RenderUTF8_Blended(font, content.c_str(), fg);
+	else temp = TTF_RenderUTF8_Blended_Wrapped(font, content.c_str(), fg, wraplength);
+	
+	sdl::texture rs {SDL_CreateTextureFromSurface(rdr, temp)};
+	SDL_FreeSurface(temp);
+	return rs;
+};
 //void draw_tilelayer(SDL_Renderer* rdr,const tiled::tilelayer& tl, const tiled::tileset& ts)
 //{
 //	const auto& [opacity, parallax, offset, tint] = tl._drawdata;
@@ -160,14 +192,12 @@ void beaver::init_imgui(beaver::sdlgame& game)
 #endif
 };
 
-void beaver::run_game_loop(beaver::sdlgame& game, 
-							const std::function<bool(float)>& updatef, 
-							const std::function<void()>& drawf)
+void beaver::run_game_loop(beaver::sdlgame& game, const gameloop& gameloop)
 {
+	gameloop._initf();
 	game._fpstracker.reset();
 
 	SDL_Event sdlevent;
-
 	bool loop_running {true};
 
 	while (loop_running)
@@ -196,8 +226,10 @@ void beaver::run_game_loop(beaver::sdlgame& game,
 #endif
 			// Normally, dt_ratio() will return 1, if lag, return > 1, if too fast, return < 1
 			// use dt_ratio in game logic is like "how many pixel a character move in one frame"
-			if (!updatef(game._fpstracker.dt_ratio())) loop_running = false;
-			drawf();
+			if (!gameloop._updatef(game._fpstracker.dt_ratio())) loop_running = false;
+	
+
+			gameloop._drawf();
 
 #ifndef NDEBUG
 			ImGuiIO& io = ImGui::GetIO();
@@ -211,6 +243,8 @@ void beaver::run_game_loop(beaver::sdlgame& game,
 			game._fpstracker.end_frame();
 		};
 	};
+
+	gameloop._exitf();
 
 };
 

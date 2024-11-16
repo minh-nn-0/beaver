@@ -1,0 +1,7 @@
+@startuml
+participant game
+participant engine
+
+game -> engine ++: declare gameloop(s), containing init, update, draw and exit functions
+engine -> game : init SDL library, take care of handling the game loop \n make sure it goes at the right fps, make sure ImGui runs normally for example
+@enduml

@@ -1,0 +1,181 @@
+@startuml
+skinparam packageStyle rectangle
+
+set separator ::
+
+namespace thirdparty {
+	() ImGui <<GUI>>
+	() SDL
+}
+
+namespace beaver::input {
+	struct controller
+	{
+		map<unsigned, unsigned> _keymap;
+		void swap();
+		void update(const SDL_Event& e);
+		bool pressed(unsigned id);
+		bool just_pressed(unsigned id);
+	}
+}
+namespace beaver::camera {
+}
+namespace beaver::sprite {
+}
+namespace beaver::tileanimation {
+}
+namespace beaver::time {
+	struct FPS_tracker
+	{
+		int elapsed_time_ms();
+		float dt_ratio();
+		bool new_frame_should_start();
+		void end_frame();
+		int _FPS {60};
+		clock _clock;
+		timepoint _cur_frame;
+		timepoint _prev_frame;
+	}
+
+	struct normal_clock
+	{
+	}
+
+	struct timer
+	{
+	}
+}
+namespace beaver::event {
+}
+
+namespace wrapper {
+	namespace sdlwrapper {
+		struct app 
+		{
+			SDL_Renderer* _renderer
+			SDL_Windows* _window
+		}
+		struct texture
+		{
+		}
+		struct soundchunk
+		{
+		}
+		struct music
+		{
+		}
+		struct font
+		{
+		}
+	}
+	sdlwrapper <|--- ::thirdparty::SDL
+	note top of sdlwrapper
+		SDL handle creating the window, and render to that window
+	end note
+
+	namespace tiledwrapper {
+		interface Free_functions
+		{
+			get_flip_flags(id)
+			id_at(position)
+			rect_at(id)
+		}
+
+		struct drawdata
+		{
+			_opacity
+			_parallax
+			_offset
+			_tint
+		}
+
+		struct object
+		{
+			std::string _name
+			std::variant<rect, point> _object
+			nlohmann::json _properties
+		}
+		metaclass __layer
+		{
+			string _name
+			bool _visible
+		}
+		__layer *- drawdata
+
+		struct tilelayer extends __layer
+		{
+			std::vector<long> _data
+			int _tilesize
+			int _numx
+			int _numy
+		}
+
+		struct objectlayer extends __layer
+		{
+			std::vector<objects> _objects
+		}
+
+		objectlayer *-- object
+		struct grouplayer extends __layer
+		{
+		}
+
+		struct tileset
+		{
+			_img
+			_tilesize
+			_numx
+			_numy
+		}
+		struct tilemap
+		{
+			_bgcolor
+			_layers
+		}
+		tilemap *-- "contains vector\n of __layer variant" __layer
+		tilemap *-- tileset
+	}
+
+}
+
+
+namespace beaver::core {
+	struct gameloop
+	{
+		std::function<void()> _initf
+		std::function<bool(float)> _updatef
+		std::function<void()> _drawf
+		std::function<void()> _exitf
+	}
+
+	note left of gameloop::_initf
+		Call once when
+		this struct is 
+		passed to <i>run_game_loop</i>
+	end note
+	
+	note top of gameloop 
+		Call <i>updatef</i> and <i>_drawf
+		frames time per second
+	end note
+	note left of gameloop::_exitf
+		Call once when get out of the loop
+		usually when _updatef return false
+	end note
+	
+
+
+	struct sdlgame
+	{
+	}
+
+	sdlgame *-- wrapper::sdlwrapper::app
+	sdlgame *-- beaver::time::FPS_tracker
+	sdlgame *-- beaver::input::controller
+	
+}
+beaver o- thirdparty
+
+
+
+@enduml
