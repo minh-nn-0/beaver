@@ -70,6 +70,7 @@ namespace beaver
 		std::function<void()> _drawf;
 		std::function<void()> _exitf;
 	};
+
 	struct sdlgame
 	{
 		using assets_manager = beaver::resource::manager<sdl::texture, sdl::soundchunk, sdl::music, sdl::font>;
@@ -85,6 +86,19 @@ namespace beaver
 		//std::function<void()> 				_drawf;
 		//
 		//void run();
+	};
+
+	struct game
+	{
+	private:
+		sdl::app _sdl;
+		bool _running;
+		std::queue<sdl::drawdata> _drawqueue;
+	public:
+		beaver::FPS_tracker _fpstracker;
+		beaver::controller _ctl;
+		void draw();
+		void run_loop(const gameloop&);
 	};
 
 	void init_imgui(sdlgame&);
