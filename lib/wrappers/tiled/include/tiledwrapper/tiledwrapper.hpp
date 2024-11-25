@@ -73,7 +73,7 @@ namespace tiled
 	};
 
 	// =========================== PRIMITIVES ========================
-	using tile = int;
+	using tile = long;
 
 
 	using rect = mmath::frect;
@@ -84,7 +84,7 @@ namespace tiled
 	struct object
 	{
 		std::string _name;
-		std::variant<rect, point> _object;
+		std::variant<rect, point, tile> _object;
 		nlohmann::json _properties;
 	};
 
@@ -98,7 +98,7 @@ namespace tiled
 
 	struct tilelayer : __layer
 	{
-		std::vector<long>	_data;
+		std::vector<tile>	_data;
 		int _tilesize, _numx, _numy;
 	};
 
@@ -112,7 +112,7 @@ namespace tiled
 		using layer = std::variant<tilelayer, objectlayer, grouplayer>;
 		std::vector<layer> _layers;
 		
-		bool have_layer(const std::string& name)
+		bool have_layer(const std::string& name) const
 		{
 			return std::ranges::find_if(_layers,
 						[&](auto&& layer) 
@@ -121,16 +121,19 @@ namespace tiled
 									layer); }) != _layers.end();
 		};
 
-		layer& get_layer_by_name(const std::string& name)
+		template<typename T> requires std::is_base_of_v<__layer,T>
+		T& get_layer_by_name(const std::string& name) 
 		{
-			if (auto rs = std::ranges::find_if(_layers,
+			if (auto rs = std::ranges::find_if(
+						_layers,
 						[&](auto&& layer) 
 						{ return std::visit(
 									[&](auto&& layer) {return layer._name == name;}, 
-									layer); });
-					rs != _layers.end())
+									layer);
+						});
+				rs != _layers.end() && std::holds_alternative<T>(*rs))
 				return *rs;
-			else throw std::logic_error(name + "not found");
+			else throw std::runtime_error(std::format("layer of name {} not found", name));
 		};
 	};
 
@@ -155,24 +158,13 @@ namespace tiled
 		tilemap() = default;
 		tilemap(const std::filesystem::path&);
 		
-		int	_tilesize, _numx, _numy;
-		std::array<int, 4> _bgcolor {0,0,0,255};
-		
 		std::map<int, tileset> _tilesets;
-		std::vector<layer> _layersdata;
-
-		layer& get_layer_by_name(const std::string& name)
-		{
-			if (auto rs = std::ranges::find_if(_layersdata,
-						[&](auto&& layer) 
-						{ return std::visit(
-									[&](auto&& layer) {return layer._name == name;}, 
-									layer); });
-					rs != _layersdata.end())
-				return *rs;
-			else throw std::logic_error(name + "not found");
-		};
-
+		grouplayer _layerdata;
+		std::array<int, 4> _bgcolor {0,0,0,255};
+		nlohmann::json _properties;
+		std::filesystem::path _path;
+		int	_tilesize, _numx, _numy;
+		
 		const tileset& tileset_at(int id) const
 		{
 			return std::ranges::find_if(_tilesets | std::views::reverse,

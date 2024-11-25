@@ -19,6 +19,23 @@
 //	catch (nlohmann::json::out_of_range e) {};
 //};
 
+
+
+nlohmann::json get_properties(const nlohmann::json& json)
+{
+	nlohmann::json rs;
+	if (json.count("properties") > 0)
+	{
+		for (auto& prop: json.at("properties"))
+		{
+			rs[prop.at("name")] = rs.at("value");
+			std::cout << rs.at("name") << " " << rs.at("value") << '\n';
+		};
+	};
+	return rs;
+};
+
+
 // Tiled store tintcolor as #aarrggbb, convert it to #rrggbbaa
 constexpr auto correct_format_tiledcolor = [](const std::string& c) 
 {return c.substr(3) + c.substr(1,2); };
@@ -84,26 +101,28 @@ tiled::layer loadlayer(const nlohmann::json& tmj, int tilesize)
 		tiled::objectlayer objlayer {lname, ldrawdata, lvisible};
 		for (auto& obj: tmj.at("objects"))
 		{
-			// point
-			if (obj.count("point") > 0) {}
+			std::string objname {obj.at("name")};
+			nlohmann::json props {get_properties(obj)};
+
+			if (tmj.count("point") > 0)
+			{
+				objlayer._objects.emplace_back(objname, 
+						mmath::fvec2{obj.at("x"), obj.at("y")},
+						props);
+			}
+			else if (tmj.count("gid") > 0)
+			{
+				objlayer._objects.emplace_back(objname,
+						static_cast<long>(obj.at("gid")),
+						props);
+			}
 			else
 			{
-				std::string objname {obj.at("name")};
-				tiled::rect rect { 	{obj.at("x"), obj.at("y")},
-									{obj.at("width"), obj.at("height")}};
+				tiled::rect rect {{obj.at("x"), obj.at("y")},
+								{obj.at("width"), obj.at("height")}};
 
-				nlohmann::json props;
-				if (obj.count("properties") > 0)
-				{
-					for (auto& prop: obj.at("properties"))
-					{
-						props[prop.at("name")] = prop.at("value");
-						std::cout << prop.at("name") << " " << prop.at("value") << '\n';
-					};
-				};
-
-				objlayer._objects.emplace_back(objname, rect, props);
-			};
+				objlayer._objects.emplace_back(objname, rect, get_properties(obj));
+			}
 		};
 
 		rs = objlayer;
@@ -159,12 +178,18 @@ tiled::tilemap::tilemap(const std::filesystem::path& p)
 	std::ifstream f {p};
 	nlohmann::json tmj;
 	f >> tmj;
-	f.close();
+	
+	_path = p;
 
 	_tilesize = tmj.at("tilewidth");
 	_numx = static_cast<int>(tmj.at("width"));
 	_numy = static_cast<int>(tmj.at("height"));
-	
+
+
+	// PROPERTIES
+	_properties = get_properties(tmj);
+
+	// TILESET
 	for (auto& ts: tmj.at("tilesets"))
 	{
 		std::cout << "ts\n";
@@ -186,10 +211,8 @@ tiled::tilemap::tilemap(const std::filesystem::path& p)
 
 	// LAYERS
 	for (auto& layer: tmj.at("layers")) 
-		_layersdata.push_back(loadlayer(layer, _tilesize));
+		_layerdata._layers.push_back(loadlayer(layer, _tilesize));
 	
-	//for (auto& layer: _layersdata)
-	//	printlayers(layer);
 };
 
 
