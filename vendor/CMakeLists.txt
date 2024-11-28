@@ -1,4 +1,7 @@
 add_subdirectory(SDL)
+
+# IMGUI
+
 add_library(imgui_sdl SHARED
             ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui.cpp
             ${CMAKE_CURRENT_SOURCE_DIR}/imgui/imgui_draw.cpp
@@ -14,4 +17,9 @@ target_include_directories(imgui_sdl PUBLIC
 
 target_link_libraries(imgui_sdl PRIVATE sdlwrapper)
 
+# LUA
+
+add_subdirectory(lua)
+
+# HEADERONLY
 target_include_directories(beaver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/headeronly)

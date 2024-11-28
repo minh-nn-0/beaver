@@ -132,7 +132,7 @@ namespace tiled
 									layer);
 						});
 				rs != _layers.end() && std::holds_alternative<T>(*rs))
-				return *rs;
+				return std::get<T>(*rs);
 			else throw std::runtime_error(std::format("layer of name {} not found", name));
 		};
 	};

@@ -11,6 +11,7 @@
 #include <filesystem>
 namespace sdl
 {
+	void init_sdl(const char* title, int window_width, int window_height, SDL_Window* wd, SDL_Renderer* rdr);
 	struct app
 	{
 		app(const char* title, int w, int h);

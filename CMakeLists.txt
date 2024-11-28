@@ -18,10 +18,13 @@ add_library(beaver SHARED ${BEAVER_SRC_DIR}/core.cpp)
 target_include_directories(beaver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include 
 											${UTILITIES_DIR})
 
+target_compile_definitions(beaver PRIVATE ENGINE_PATH="${CMAKE_CURRENT_SOURCE_DIR}")
+
+
 add_subdirectory(lib)
 
 add_subdirectory(${VENDOR_DIR})
 
-target_link_libraries(beaver PUBLIC sdlwrapper imgui_sdl mmath tiledwrapper)
+target_link_libraries(beaver PUBLIC sdlwrapper imgui_sdl mmath tiledwrapper lua)
 
 add_subdirectory(test EXCLUDE_FROM_ALL)

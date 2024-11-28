@@ -1,5 +1,20 @@
 #include <sdlwrapper/sdlwrapper.hpp>
 #include <iostream>
+void sdl::init_sdl(const char* title, int w, int h, SDL_Window* wd, SDL_Renderer* rdr)
+{
+	SDL_Init(SDL_INIT_EVERYTHING);
+	unsigned wflags = SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+	unsigned rflags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE;
+	wd = SDL_CreateWindow(title, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w,h, wflags);
+	if (!wd) std::cerr << "failed to create window" << SDL_GetError() << '\n';
+	
+	rdr = SDL_CreateRenderer(wd, -1, rflags);
+	if (!rdr) std::cerr << "failed to create renderer" << SDL_GetError() << '\n';
+	
+	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
+	Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 1024);
+	TTF_Init();
+};
 sdl::app::app(const char* title, int w, int h)
 {
 	SDL_Init(SDL_INIT_EVERYTHING);

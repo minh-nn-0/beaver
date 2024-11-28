@@ -60,7 +60,7 @@ void sdl::draw_tilemap(SDL_Renderer* rdr,
 		const tiled::tilemap& tm,
 		const std::vector<sdl::texture*>& textures)
 {
-	for (const auto& layer: tm._layersdata)
+	for (const auto& layer: tm._layerdata._layers)
 		draw_layers(layer, {}, rdr, cam, tm, textures);
 };
 
@@ -151,14 +151,93 @@ sdl::texture sdl::render_text_blended(SDL_Renderer* rdr,
 //			drawlayers(gr_l, sdl);
 //};
 
-beaver::sdlgame::sdlgame(const std::string& title, int ww, int wh, int FPS)
-	: _sdl(title.c_str(), ww, wh), _fpstracker(beaver::FPS_tracker{._FPS = FPS})
+void beaver::init_imgui(SDL_Window* wd, SDL_Renderer* rdr)
 {
+	// Setup Dear ImGui context
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	// Setup Dear ImGui style
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsLight();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplSDL2_InitForSDLRenderer(wd, rdr);
+    ImGui_ImplSDLRenderer2_Init(rdr);
+};
+
+beaver::sdlgame::sdlgame()
+{
+	_lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::string, sol::lib::math, sol::lib::io, sol::lib::table);
+
+	_lua["ENGINE_PATH"] = ENGINE_PATH;
+	_lua.script(R"(package.path = package.path .. ";" .. ENGINE_PATH .. "/utilities/luamodules/?.lua")");
+	_lua.script(R"(salt = require("salt"))");
+
+	// SDL
+	int window_width {1280}, window_height {720}, FPS {60};
+	std::string title {"NNM"};
+	
+	if (std::filesystem::exists("./config.lua"))
+	{
+		_lua.script(R"(config = require("config"))");
+		window_width = _lua["config"]["window_width"];
+		window_height = _lua["config"]["window_height"];
+		title = _lua["config"]["title"];
+	}
+	else
+	{
+		_lua["config"] = _lua.create_table_with(
+				"window_width", 1280,
+				"window_height", 720,
+				"title", "NNM"
+				);
+		_lua.script(R"(salt.save(config, "config.lua"))");
+	};
+	
+	sdl::init_sdl(title.c_str(), window_width, window_height, _sdlwindow, _sdlrenderer);
+	
+
+	// Setup binding to Lua
+	
+	_lua.set_function("draw", 
+			[&](const std::string& texture,
+				const sol::table& src = {}, const sol::table& dst = {},
+				const sol::table& rotation = {}, int flipflag = 0)
+			{
+				sdl::texture* tex = _assets.get<sdl::texture>(texture);
+				SDL_Rect srcrect;
+				if (src.valid())
+				{
+					if (
+				};
+				sdl::drawdata ddata {._tex = *tex,
+									._src = {src["x"], src["y"], src["w"], src["h"]},
+									._dst = {dst["x"], dst["y"], dst["w"], dst["h"]},
+									._angle =
+			})
+										
+
+
+
+
 #ifndef NDEBUG
-	beaver::init_imgui(*this);
+	beaver::init_imgui(_sdlwindow, _sdlrenderer);
 #endif
 };
 
+beaver::sdlgame::~sdlgame()
+{	
+	std::cout << "Quitting SDL\n";
+	SDL_DestroyWindow(_sdlwindow);
+	SDL_DestroyRenderer(_sdlrenderer);
+	TTF_Quit();
+	Mix_Quit();
+	IMG_Quit();
+	SDL_Quit();
+};
 //void beaver::sdlgame::run()
 //{
 //
@@ -170,51 +249,42 @@ beaver::sdlgame::sdlgame(const std::string& title, int ww, int wh, int FPS)
 //
 //	}
 //};
-
-void beaver::init_imgui(beaver::sdlgame& game)
+void beaver::sdlgame::load_script()
 {
-
-#ifndef NDEBUG
-	// Setup Dear ImGui context
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	
-	// Setup Dear ImGui style
-    ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
-
-    // Setup Platform/Renderer backends
-    ImGui_ImplSDL2_InitForSDLRenderer(game._sdl._window, game._sdl._renderer);
-    ImGui_ImplSDLRenderer2_Init(game._sdl._renderer);
-#endif
+	_lua.script_file("main.lua");
+	//TODO make default init, update, draw and exit
 };
 
-void beaver::run_game_loop(beaver::sdlgame& game, const gameloop& gameloop)
+void beaver::sdlgame::run()
 {
-	gameloop._initf();
-	game._fpstracker.reset();
+	load_script();
 
+	std::function<void()> initf = _lua["INIT"];
+	std::function<bool(float)> updatef = _lua["UPDATE"];
+	std::function<void()> drawf = _lua["DRAW"];
+	std::function<void()> exitf = _lua["EXIT"];
+
+	initf();
+
+	_fpstracker.reset();
+	
 	SDL_Event sdlevent;
 	bool loop_running {true};
 
 	while (loop_running)
 	{
-		
-		if (game._fpstracker.new_frame_should_start())
+		if (_fpstracker.new_frame_should_start())
 		{
-			game._ctl.swap();
+			_ctl.swap();
 			while (SDL_PollEvent(&sdlevent))
 			{
 				ImGui_ImplSDL2_ProcessEvent(&sdlevent);
-				game._ctl.update(sdlevent);
+				_ctl.update(sdlevent);
 				if (sdlevent.type == SDL_QUIT) 
 				{
 					//TODO: handle quit
 					loop_running = false;
-					game._running = false;
+					_running = false;
 				};
 			};
 
@@ -226,25 +296,23 @@ void beaver::run_game_loop(beaver::sdlgame& game, const gameloop& gameloop)
 #endif
 			// Normally, dt_ratio() will return 1, if lag, return > 1, if too fast, return < 1
 			// use dt_ratio in game logic is like "how many pixel a character move in one frame"
-			if (!gameloop._updatef(game._fpstracker.dt_ratio())) loop_running = false;
+			if (!updatef(_fpstracker.dt_ratio())) loop_running = false;
 	
-
-			gameloop._drawf();
+			drawf();
 
 #ifndef NDEBUG
 			ImGuiIO& io = ImGui::GetIO();
-			SDL_RenderSetScale(game._sdl._renderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
+			SDL_RenderSetScale(_sdlrenderer, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
 			ImGui::Render();
-			ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), game._sdl._renderer);
+			ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), _sdlrenderer);
 #endif
 
-        	SDL_RenderPresent(game._sdl._renderer);
+        	SDL_RenderPresent(_sdlrenderer);
 			
-			game._fpstracker.end_frame();
+			_fpstracker.end_frame();
 		};
 	};
 
-	gameloop._exitf();
-
+	exitf();
 };
 

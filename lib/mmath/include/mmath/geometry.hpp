@@ -9,14 +9,19 @@ namespace mmath
 	template<Numeric UnitT>
 	struct rectangle
 	{
-
+		rectangle() = default;
+		rectangle(UnitT x, UnitT y, UnitT w, UnitT h)
+		{
+			_pos = {x,y};
+			_size = {w,h};
+		};
 		vec2<UnitT> _pos;
 		vec2<UnitT> _size;
 		
 		template<Numeric N>
 		rectangle<N> operator * (const N& scale) const
 		{
-			return {_pos * scale,  _size * scale};
+			return {_pos * scale, _size * scale};
 		};
 
 		friend std::ostream& operator << (std::ostream& os, rectangle& r)
@@ -39,8 +44,8 @@ namespace mmath
 		UnitT 		width() 	const {return _size.x;};
 		UnitT 		height()	const {return _size.y;};
 		fvec2 		center() 	const {return _pos + _size/2;};
-		vec2<UnitT> side_h() 	const { return {_pos.x, _pos.x + width()};};
-		vec2<UnitT> side_v() 	const { return {_pos.y, _pos.y + height()};};
+		vec2<UnitT> side_h() 	const {return {_pos.x, _pos.x + width()};};
+		vec2<UnitT> side_v() 	const {return {_pos.y, _pos.y + height()};};
 
 
 		operator SDL_Rect() const

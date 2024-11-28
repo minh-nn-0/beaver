@@ -20,6 +20,10 @@
 #include <utilities.hpp>
 
 
+//Scripting with Lua and Sol
+
+#include <Beaver/scripting.hpp>
+
 // wrappers
 #include <sdlwrapper/sdlwrapper.hpp>
 #include <tiledwrapper/tiledwrapper.hpp>
@@ -28,11 +32,12 @@
 
 #ifndef NDEBUG
 
-//Imgui
-#include <imgui.h>
-#include <imgui_impl_sdl2.h>
-#include <imgui_impl_sdlrenderer2.h>
-#include <misc/cpp/imgui_stdlib.h>
+	//Imgui
+	#include <imgui.h>
+	#include <imgui_impl_sdl2.h>
+	#include <imgui_impl_sdlrenderer2.h>
+	#include <misc/cpp/imgui_stdlib.h>
+
 #endif
 
 namespace sdl
@@ -62,47 +67,42 @@ namespace beaver
 {
 	constexpr unsigned MSPF_60 = 17; //milliseconds per frame
 	constexpr unsigned MSPF_30 = 34; //milliseconds per frame
-	
-	struct gameloop
-	{
-		std::function<void()> _initf;
-		std::function<bool(float)> _updatef;
-		std::function<void()> _drawf;
-		std::function<void()> _exitf;
-	};
 
+	void init_imgui(SDL_Window* wd, SDL_Renderer* rdr);
 	struct sdlgame
 	{
-		using assets_manager = beaver::resource::manager<sdl::texture, sdl::soundchunk, sdl::music, sdl::font>;
-		
-		sdlgame(const std::string& title, int window_width, int window_height, int FPS = 60);
-		
+		sdlgame();
+		~sdlgame();
 		bool 								_running {true};
 		beaver::FPS_tracker 				_fpstracker;
+		beaver::resource::manager<sdl::texture, sdl::font,
+									sdl::soundchunk, sdl::music,
+									tiled::tilemap> _assets;
 		beaver::controller 					_ctl;
-		sdl::app 							_sdl;
-		//// ideally, will call once every 1000/fps (about 17 milliseconds for 60fps)
-		//std::function<bool(const float)> 	_updatef;
-		//std::function<void()> 				_drawf;
-		//
-		//void run();
+		sol::state							_lua;
+		// SDL
+		SDL_Window*	_sdlwindow;
+		SDL_Renderer* _sdlrenderer;
+
+		void load_script();
+		void run();
 	};
 
-	struct game
-	{
-	private:
-		sdl::app _sdl;
-		bool _running;
-		std::queue<sdl::drawdata> _drawqueue;
-	public:
-		beaver::FPS_tracker _fpstracker;
-		beaver::controller _ctl;
-		void draw();
-		void run_loop(const gameloop&);
-	};
+	//struct game
+	//{
+	//private:
+	//	sdl::app _sdl;
+	//	bool _running;
+	//	std::queue<sdl::drawdata> _drawqueue;
+	//public:
+	//	beaver::FPS_tracker _fpstracker;
+	//	beaver::controller _ctl;
+	//	void draw();
+	//	void run_loop(const gameloop&);
+	//};
 
-	void init_imgui(sdlgame&);
 	
-	void run_game_loop(sdlgame&, const gameloop&);
+	//void run_game_loop(sdlgame&, const gameloop&);
+	
 };
 #endif
