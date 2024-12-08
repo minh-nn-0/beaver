@@ -15,6 +15,11 @@ namespace mmath
 			_pos = {x,y};
 			_size = {w,h};
 		};
+		rectangle(vec2<UnitT> x, vec2<UnitT> y)
+		{
+			_pos = x;
+			_size = y;
+		};
 		vec2<UnitT> _pos;
 		vec2<UnitT> _size;
 		
@@ -70,8 +75,8 @@ namespace mmath
 
 	struct circle
 	{
-		float x,y;
-		float radius;
+		fvec2 _center;
+		float _radius;
 	};
 	
 }

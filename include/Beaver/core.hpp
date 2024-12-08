@@ -5,20 +5,16 @@
 #include <Beaver/input.hpp>
 #include <Beaver/camera.hpp>
 #include <Beaver/sprite.hpp>
-//#include <Beaver/graphics.hpp>
+#include <Beaver/graphics.hpp>
 #include <Beaver/tileanimation.hpp>
 #include <Beaver/time.hpp>
 #include <Beaver/event.hpp>
 #include <Beaver/state.hpp>
-
 #include <Beaver/entity.hpp>
 #include <Beaver/resource.hpp>
-
 #include <Beaver/AI.hpp>
-
 #include <Beaver/enum_bitops.hpp>
 #include <utilities.hpp>
-
 
 //Scripting with Lua and Sol
 
@@ -29,9 +25,7 @@
 #include <tiledwrapper/tiledwrapper.hpp>
 
 
-
 #ifndef NDEBUG
-
 	//Imgui
 	#include <imgui.h>
 	#include <imgui_impl_sdl2.h>
@@ -68,26 +62,22 @@ namespace beaver
 	constexpr unsigned MSPF_60 = 17; //milliseconds per frame
 	constexpr unsigned MSPF_30 = 34; //milliseconds per frame
 
-	void init_imgui(SDL_Window* wd, SDL_Renderer* rdr);
+	using assets_manager = beaver::resource::manager<sdl::texture, sdl::music, sdl::soundchunk, sdl::font>;
+
 	struct sdlgame
 	{
-		sdlgame();
+		sdlgame(const std::string& title, int window_width, int window_height);
 		~sdlgame();
 		bool 								_running {true};
 		beaver::FPS_tracker 				_fpstracker;
-		beaver::resource::manager<sdl::texture, sdl::font,
-									sdl::soundchunk, sdl::music,
-									tiled::tilemap> _assets;
 		beaver::controller 					_ctl;
-		sol::state							_lua;
+		beaver::graphics					_graphics;
+		beaver::assets_manager				_assets;
 		// SDL
-		SDL_Window*	_sdlwindow;
-		SDL_Renderer* _sdlrenderer;
-
-		void load_script();
-		void run();
 	};
+	void run_game(sdlgame&, const std::function<bool(float)>& updatef, const std::function<void()>& drawf);
 
+	void init_imgui(SDL_Window* wd, SDL_Renderer* rdr);
 	//struct game
 	//{
 	//private:

@@ -14,7 +14,10 @@ set(BEAVER_SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src/Beaver)
 set(VENDOR_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
 set(UTILITIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/utilities)
 
-add_library(beaver SHARED ${BEAVER_SRC_DIR}/core.cpp)
+add_library(beaver SHARED 
+	${BEAVER_SRC_DIR}/core.cpp
+	${BEAVER_SRC_DIR}/graphics.cpp
+)
 target_include_directories(beaver PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include 
 											${UTILITIES_DIR})
 

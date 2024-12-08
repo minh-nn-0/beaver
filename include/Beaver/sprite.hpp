@@ -8,10 +8,9 @@ namespace beaver
 {
 	struct sprite
 	{
-		int							_tileid;
+		std::vector<mmath::frect> 	_collisions;
 		mmath::frect				_rect;
 		//relative to _rect
-		std::vector<mmath::frect> 	_collisions;
 		beaver::tile_animation 		_tileanimation;
 	};
 };

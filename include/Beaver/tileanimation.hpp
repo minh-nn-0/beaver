@@ -31,6 +31,11 @@ namespace beaver
 			reset();
 		};
 
+		void set_frames(const framevec& frames)
+		{
+			_frames = frames;
+			reset();
+		};
 		bool frame_is_end() {return _current_frame == _frames.end() -1;};
 		bool frame_is_start() {return _current_frame == _frames.begin();};
 		void play() {_playing = true;};

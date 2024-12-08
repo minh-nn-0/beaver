@@ -116,9 +116,10 @@ namespace tiled
 		{
 			return std::ranges::find_if(_layers,
 						[&](auto&& layer) 
-						{ return std::visit(
-									[&](auto&& layer) {return layer._name == name;}, 
-									layer); }) != _layers.end();
+						{ 
+							return std::visit(
+									[&](auto&& layer) {return layer._name == name;},layer);
+						}) != _layers.end();
 		};
 
 		template<typename T> requires std::is_base_of_v<__layer,T>
