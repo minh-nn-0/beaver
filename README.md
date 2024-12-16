@@ -4,7 +4,6 @@ A game engine based on SDL
 # Features
 - Use C++ 23
 - Aim towards generality and composability
-- Support Tiled .tmj map export
 
 
 # How to use
