@@ -1,15 +1,19 @@
-#include <Beaver/graphics.hpp>
+#include <beaver/graphics.hpp>
+
+mmath::fvec2 position_with_cam(const mmath::fvec2& pos, const beaver::camera2D& cam)
+{
+	return (pos - cam._view._pos) * cam._zoom;
+};
 
 beaver::graphics::graphics(SDL_Window* wd, SDL_Renderer* rdr, camera2D* cam)
 	: _wd(wd), _rdr(rdr), _cam(cam)
 {
 };
 
-
 void beaver::graphics::point(const mmath::fvec2& p)
 {
 	mmath::fvec2 draw_point {p};
-	if (_cam != nullptr) draw_point -= _cam->_view._pos;
+	if (_cam != nullptr) draw_point = position_with_cam(draw_point, *_cam);
 	SDL_RenderDrawPointF(_rdr, draw_point.x, draw_point.y);
 };
 
@@ -24,8 +28,8 @@ void beaver::graphics::line(const mmath::fvec2& p1, const mmath::fvec2& p2)
 	mmath::fvec2 draw_point2 {p2};
 	if (_cam != nullptr)
 	{
-		draw_point1 -= _cam->_view._pos;
-		draw_point2 -= _cam->_view._pos;
+		draw_point1 = position_with_cam(draw_point1, *_cam);
+		draw_point2 = position_with_cam(draw_point2, *_cam);
 	}
 
 
@@ -40,7 +44,11 @@ void beaver::graphics::line(float x1, float y1, float x2, float y2)
 void beaver::graphics::rect(const mmath::frect& rect, bool filled)
 {
 	mmath::frect drawrect = rect;
-	if (_cam != nullptr) drawrect._pos -= _cam->_view._pos;
+	if (_cam != nullptr) 
+	{
+		drawrect._pos = position_with_cam(drawrect._pos, *_cam);
+		drawrect._size = drawrect._size * _cam->_zoom;
+	};
 	SDL_FRect sdl_drawrect = drawrect;
 	if (filled) 
 		SDL_RenderFillRectF(_rdr, &sdl_drawrect);
@@ -57,16 +65,19 @@ void beaver::graphics::circle(const mmath::circle& circle, bool filled)
 // Code stolen from https://gist.github.com/Gumichan01/332c26f6197a432db91cc4327fcabb1c, with a little modifying
  //   CHECK_RENDERER_MAGIC(renderer, -1);
 
-	int offsetx = 0;
-    int offsety = circle._radius;
-    int d = circle._radius -1;
+	mmath::fvec2 center = circle._center;
+	float radius = circle._radius;
 
-	float x = circle._center.x, y = circle._center.y;
 	if (_cam != nullptr)
 	{
-		x -= _cam->_view._pos.x;
-		y -= _cam->_view._pos.y;
+		center = position_with_cam(center, *_cam);
+		radius *= _cam->_zoom;
 	};
+	int offsetx = 0;
+    int offsety = radius;
+    int d = radius - 1;
+
+	float x = center.x, y = center.y;
 	if (filled)
 	{
 		while (offsety >= offsetx) 
@@ -80,7 +91,7 @@ void beaver::graphics::circle(const mmath::circle& circle, bool filled)
 				d -= 2*offsetx + 1;
 				offsetx +=1;
 			}
-			else if (d < 2 * (circle._radius - offsety)) {
+			else if (d < 2 * (radius - offsety)) {
 				d += 2 * offsety - 1;
 				offsety -= 1;
 			}
@@ -108,7 +119,7 @@ void beaver::graphics::circle(const mmath::circle& circle, bool filled)
 				d -= 2*offsetx + 1;
 				offsetx +=1;
 			}
-			else if (d < 2 * (circle._radius - offsety)) {
+			else if (d < 2 * (radius - offsety)) {
 				d += 2 * offsety - 1;
 				offsety -= 1;
 			}
@@ -136,13 +147,20 @@ void beaver::graphics::texture(const sdl::texture& tex,
 	SDL_Rect sdlsrc_ = src;
 	SDL_FRect sdldst_ = dst;
 
-	SDL_Rect* sdlsrc = sdlsrc_.x == 0 ? nullptr : &sdlsrc_; 
-	SDL_FRect* sdldst = sdldst_.x == 0 ? nullptr : &sdldst_; 
+	SDL_Rect* sdlsrc = sdlsrc_.w == 0 ? nullptr : &sdlsrc_; 
+	SDL_FRect* sdldst = sdldst_.w == 0 ? nullptr : &sdldst_; 
 
 	if (_cam != nullptr)
 	{
-		sdldst->x -= _cam->_view._pos.x;
-		sdldst->y -= _cam->_view._pos.y;
+		if (sdldst != nullptr)
+		{
+			mmath::fvec2 pos = position_with_cam(dst._pos, *_cam);
+			sdldst->x = pos.x;
+			sdldst->y = pos.y;
+
+			sdldst->w = sdldst->w * _cam->_zoom;
+			sdldst->h = sdldst->h * _cam->_zoom;
+		};
 	};
 	SDL_FPoint p;
 	p.x = pivot.x;
@@ -157,9 +175,7 @@ void beaver::graphics::text_solid(const mmath::fvec2& pos,
 				int wraplength)
 {
 	SDL_Color fg {_draw_color[0], _draw_color[1], _draw_color[2], _draw_color[3]};
-	SDL_Surface* temp;
-	if (wraplength == 0) temp = TTF_RenderUTF8_Solid(font, content.c_str(), fg);
-	else temp = TTF_RenderUTF8_Solid_Wrapped(font, content.c_str(), fg, wraplength);
+	SDL_Surface* temp = TTF_RenderUTF8_Solid_Wrapped(font, content.c_str(), fg, wraplength);
 	
 	sdl::texture text {SDL_CreateTextureFromSurface(_rdr, temp)};
 	SDL_FreeSurface(temp);
@@ -170,6 +186,24 @@ void beaver::graphics::text_solid(const mmath::fvec2& pos,
 
 	texture(text, dst);
 };
+void beaver::graphics::text_blended(const mmath::fvec2& pos,
+				const sdl::font& font,
+				const std::string& content,
+				int wraplength)
+{
+	SDL_Color fg {_draw_color[0], _draw_color[1], _draw_color[2], _draw_color[3]};
+	SDL_Surface* temp = TTF_RenderUTF8_Blended_Wrapped(font, content.c_str(), fg, wraplength);
+	
+	sdl::texture text {SDL_CreateTextureFromSurface(_rdr, temp)};
+	SDL_FreeSurface(temp);
+
+	mmath::frect dst = {pos.x, pos.y, 
+						static_cast<float>(text._width),
+						static_cast<float>(text._height)};
+
+	texture(text, dst);
+};
+
 
 void draw_layers(const tiled::layer& layer,
 		tiled::drawdata	parent_drawdata,
@@ -204,8 +238,10 @@ void draw_layers(const tiled::layer& layer,
 					
 					// adding cam offset here is wrong
 					if (graphic._cam) 
-						dst._pos -= (graphic._cam->_view._pos /* + cam._offset */ + offset) * parallax;
-					
+					{
+						dst._pos = (position_with_cam(dst._pos, *graphic._cam) /* + cam._offset */ + offset) * parallax;
+						dst._size = dst._size * graphic._cam->_zoom;
+					};
 					//dst._pos.x -= cam._view._pos.x * parallax.x - offset.x;
 					//dst._pos.y -= cam._view._pos.y * parallax.y - offset.y;
 					

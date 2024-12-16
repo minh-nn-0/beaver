@@ -4,6 +4,7 @@ add_executable(testevent EXCLUDE_FROM_ALL test_event.cpp)
 add_executable(testentity EXCLUDE_FROM_ALL test_entity.cpp)
 add_executable(testai EXCLUDE_FROM_ALL test_ai.cpp)
 add_executable(testgraphics EXCLUDE_FROM_ALL testgraphics.cpp)
+add_executable(testscript EXCLUDE_FROM_ALL testscripting.cpp)
 
 target_link_libraries(testsdl beaver)
 target_link_libraries(teststate beaver)
@@ -11,4 +12,5 @@ target_link_libraries(testevent beaver)
 target_link_libraries(testentity beaver)
 target_link_libraries(testai beaver)
 target_link_libraries(testgraphics beaver)
+target_link_libraries(testscript beaver)
 

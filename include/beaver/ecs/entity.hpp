@@ -40,12 +40,53 @@ namespace entity
 		std::vector<std::size_t>	_free_list;
 
 		std::size_t size() const {return _entities.size();};
+
+		void reserve(std::size_t size)
+		{
+			_entities.reserve(size);
+			(view_one<Ts>().reserve(size),...);
+		};
 		
 		void check_valid_entity(std::size_t eid)
 		{
 			if (eid >= size()) throw std::runtime_error(std::format("eid {} out of bound", eid));
 		};
 
+		bool is_active(std::size_t eid)
+		{
+			check_valid_entity(eid);
+			return _entities.at(eid)._active;
+		};
+
+		void set_active(std::size_t eid, bool active)
+		{
+			check_valid_entity(eid);
+			_entities.at(eid)._active = active;
+		};
+
+		std::vector<std::size_t> active_entities()
+		{
+			return _entities 
+				| std::views::filter([](auto&& e) { return e._active; })
+				| std::views::transform([](auto&& e) { return e._id;})
+				| std::ranges::to<std::vector<std::size_t>>();
+		};
+
+		void clear_inactive()
+		{
+			for(auto&& inactive_eid: _entities 
+									| std::views::filter([&](auto&& e) { return !e._active && std::ranges::find(_free_list, e._id) == _free_list.end();})
+									| std::views::transform([](auto&& e) { return e._id;}))
+				reset_entity(inactive_eid);
+		};
+
+		template<typename... CompTs>
+		std::vector<std::size_t> with()
+		{
+			return active_entities()
+				| std::views::filter([&](auto&& eid){ return (has_component<CompTs>(eid) && ...);})
+				| std::ranges::to<std::vector<std::size_t>>();
+		};
 		std::size_t add_entity()
 		{
 			std::size_t new_id;
@@ -60,13 +101,14 @@ namespace entity
 			else
 			{
 				_entities.emplace_back(std::set<std::string>{}, _entities.size(), true);
-				(view_one<Ts>()->emplace_back(std::nullopt),...);
+				(view_one<Ts>().emplace_back(std::nullopt),...);
 
 				new_id = _entities.size() - 1;
 			};
 
 			return new_id;
 		};
+
 
 		void reset_entity(std::size_t eid)
 		{
@@ -80,21 +122,16 @@ namespace entity
 			_free_list.push_back(eid);
 
 		};
-		void add_tags(std::size_t eid, const std::string& tag)
+		void add_tag(std::size_t eid, const std::string& tag)
 		{
 			check_valid_entity(eid);
-
-			if (!get_tags(eid).contains(tag))
-				get_tags(eid).emplace(tag);
+			get_tags(eid).emplace(tag);
 		};
 		
-		void remove_tags(std::size_t eid, const std::string& tag)
+		void remove_tag(std::size_t eid, const std::string& tag)
 		{
 			check_valid_entity(eid);
-
-			if (get_tags(eid).contains(tag))
-				get_tags(eid).erase(tag);
-
+			get_tags(eid).erase(tag);
 		};
 
 		std::set<std::string>& get_tags(std::size_t eid)
@@ -104,15 +141,37 @@ namespace entity
 			return _entities.at(eid)._tags;
 		};
 
+		bool has_tag(std::size_t eid, const std::string& tag)
+		{
+			check_valid_entity(eid);
+			return get_tags(eid).contains(tag);
+		};
+
+		std::vector<std::size_t> get_with_tags(const std::vector<std::string>& tags)
+		{
+
+			return _entities
+				| std::views::filter(
+					[&](auto&& e)
+					{
+						return e._active &&
+							std::ranges::all_of(tags, 
+							[&](const auto& tag)
+							{ 
+								return std::ranges::find(e._tags, tag) != e._tags.end();
+							});
+					})
+				| std::views::transform([](auto&& e){return e._id;})
+				| std::ranges::to<std::vector<std::size_t>>();
+		};
+
 		template<Component T>
-		std::optional<T>& add_component(std::size_t eid, const T& comp)
+		std::optional<T>& set_component(std::size_t eid, const T& comp = {})
 		{
 			check_valid_entity(eid);
 
-			auto& component = get_component<T>(eid);
-
-			component.emplace(comp);
-			return component;
+			get_component<T>(eid) = comp;
+			return get_component<T>(eid);
 		};
 
 		template<Component T>
@@ -128,11 +187,27 @@ namespace entity
 		{
 			check_valid_entity(eid);
 
-			return view_one<T>()->at(eid);
+			return view_one<T>().at(eid);
+		};
+		
+		template<Component T>
+		std::optional<T>& get_or_set_component(std::size_t eid)
+		{
+			check_valid_entity(eid);
+			if (get_component<T>(eid).has_value())
+				return get_component<T>(eid);
+			else 
+				return set_component<T>(eid);
+		};
+
+		template<Component... CompTs>
+		std::tuple<std::optional<CompTs>&...> get_components(std::size_t eid)
+		{
+			return std::make_tuple(std::ref(get_component<CompTs>(eid))...);
 		};
 
 		template<Component T>
-		bool have_component(std::size_t eid)
+		bool has_component(std::size_t eid)
 		{
 			check_valid_entity(eid);
 
@@ -140,9 +215,9 @@ namespace entity
 		};
 
 		template<Component T>
-		vec_t<T>* view_one()
+		vec_t<T>& view_one()
 		{
-			return &std::get<vec_t<T>>(_component_storage);
+			return std::get<vec_t<T>>(_component_storage);
 		};
 
 		template<Component... CompTs>

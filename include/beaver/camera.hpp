@@ -11,12 +11,12 @@ namespace beaver
 		mmath::fvec2		_offset {0,0};
 		float				_zoom {1};
 		float			  	_rotation;
-		float			  	_smooth_speed = 0.06;
+		float			  	_smooth_speed = 8;
 
 		void target(const mmath::fvec2& target, float dt)
 		{
 			// TODO _zoom factor is troublesome
-			mmath::fvec2 destination = (target - _view._size / 2 / _zoom - _view._pos - _offset) ;
+			mmath::fvec2 destination = (target - _view._size / 2.f / _zoom - _view._pos - _offset) ;
 			//TODO translate cam pos to destination
 			
 			//DOne that day <---- actually not

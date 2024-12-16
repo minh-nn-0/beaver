@@ -11,6 +11,7 @@ void sdl::init_sdl(const char* title, int w, int h, SDL_Window** wd, SDL_Rendere
 	*rdr = SDL_CreateRenderer(*wd, -1, rflags);
 	if (!*rdr) std::cerr << "failed to create renderer" << SDL_GetError() << '\n';
 	
+	SDL_SetRenderDrawBlendMode(*rdr, SDL_BLENDMODE_BLEND);
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 	Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 1024);
 	TTF_Init();

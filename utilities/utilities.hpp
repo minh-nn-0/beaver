@@ -7,15 +7,18 @@
 #include <vector>
 #include <filesystem>
 #include <fstream>
+
+#include <mmath/core.hpp>
 namespace utils
 {
-	inline std::array<int,4> hex_to_rgba(const std::string& hex) {
+	using color = std::array<unsigned char, 4>;
+	inline std::array<unsigned char,4> hex_to_rgba(const std::string& hex) {
 		std::stringstream ss;
 		std::string hex_str = hex.substr(hex[0] == '#' ? 1 : 0);
 		if (hex_str.length() != 6 && hex_str.length() != 8) 
 			throw std::invalid_argument("bad argument, incorrect format for hex");
 		
-		std::array<int,4> rgba {0,0,0,255};
+		std::array<unsigned char,4> rgba {0,0,0,255};
 		for (int i = 0; i != hex_str.length()/2; i++)
 		{
 			ss.clear();
@@ -25,7 +28,7 @@ namespace utils
 		return rgba;
 	}
 
-	inline std::array<float, 4> normalize_rgba(const std::array<int, 4>& rgba)
+	inline std::array<float, 4> normalize_rgba(const std::array<unsigned char, 4>& rgba)
 	{
 		std::array<float, 4> rs;
 		for (int i = 0; i != 4; i++) rs[i] = rgba[i] / 255.f;
@@ -84,7 +87,16 @@ namespace utils
 		return rs;
 	};
 
-
+	constexpr color lerp_rgba(const color& a, const color& b, float time)
+	{
+		return
+		{
+			static_cast<unsigned char>(a[0] + (b[0] - a[0]) * time),
+			static_cast<unsigned char>(a[1] + (b[1] - a[1]) * time),
+			static_cast<unsigned char>(a[2] + (b[2] - a[2]) * time),
+			static_cast<unsigned char>(a[3] + (b[3] - a[3]) * time),
+		};
+	};
 
 
 	template<std::size_t... Bits, std::size_t N>
@@ -126,7 +138,38 @@ namespace utils
 		return rs;
 	};
 
-;
+
+	constexpr float deg_to_rad(float degree)
+	{
+		return degree * std::numbers::pi / 180.f;
+	};
+
+	template<Numeric T>
+	constexpr mmath::ivec2 id_at(const mmath::vec2<T>& v, int tilesize)
+	{
+		int idx = v.x / tilesize;
+		int idy = v.y / tilesize;
+
+		return {idx, idy};
+	};
+
+	inline mmath::irect rect_at(int index, int width, int height, int srcwidth, int srcheight)
+	{
+		int numx = srcwidth / width;
+		int numy = srcheight / height;
+		auto div = std::div(index, numx);
+		if (div.quot >= numy) throw std::out_of_range {std::format("invalid id {}, exceed height of tile resource {}", index, numy)};
+		
+		return mmath::irect
+		{
+			{div.rem * width, div.quot * height},
+			{width, height}
+		};
+	};
+
+
+
+
 };
 
 #endif

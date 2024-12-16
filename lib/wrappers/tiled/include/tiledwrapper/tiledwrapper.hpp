@@ -161,7 +161,7 @@ namespace tiled
 		
 		std::map<int, tileset> _tilesets;
 		grouplayer _layerdata;
-		std::array<int, 4> _bgcolor {0,0,0,255};
+		std::array<unsigned char, 4> _bgcolor {0,0,0,255};
 		nlohmann::json _properties;
 		std::filesystem::path _path;
 		int	_tilesize, _numx, _numy;

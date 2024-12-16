@@ -6,20 +6,20 @@
 // ----------------------------------
 // ANIMATION
 // ----------------------------------
-namespace beaver
+namespace beaver::component
 {
-	// run at 60fps -> 17ms a frame
 	struct tile_animation
 	{
 		struct frame
 		{
-			int _duration;
 			int _id;
+			int _duration;
 		};
 		using framevec = std::vector<frame>;
 
 		framevec _frames;
-		framevec::iterator _current_frame {_frames.begin()};
+		std::size_t _current_frame {0};
+		int _framewidth, _frameheight;
 		float _timer {0};
 		bool _repeat {true};
 		bool _playing {true};
@@ -31,23 +31,18 @@ namespace beaver
 			reset();
 		};
 
-		void set_frames(const framevec& frames)
-		{
-			_frames = frames;
-			reset();
-		};
-		bool frame_is_end() {return _current_frame == _frames.end() -1;};
-		bool frame_is_start() {return _current_frame == _frames.begin();};
+		bool frame_is_end() {return _current_frame == _frames.size() -1;};
+		bool frame_is_start() {return _current_frame == 0;};
 		void play() {_playing = true;};
-		void reset() {_current_frame = _frames.begin(); _timer = 0;};
-		int current_id() {return _current_frame->_id;};
-		void update(float dtr)
+		void reset() {_current_frame = 0; _timer = 0; _playing = true;};
+		frame& current_frame() {return _frames.at(_current_frame);};
+		void update(float dt)
 		{
 			_frame_changed = false;
 			if (_playing)
 			{
-				_timer += dtr * 17;
-				if (_timer >= _current_frame->_duration) 
+				_timer += dt * 1000;
+				if (_timer >= _frames.at(_current_frame)._duration) 
 				{
 					_timer = 0;
 					// when change frames, _frames is different so _current_frame never == _frames.end() -1
@@ -64,7 +59,6 @@ namespace beaver
 			};
 		};
 	};
-
 };
 
 #endif

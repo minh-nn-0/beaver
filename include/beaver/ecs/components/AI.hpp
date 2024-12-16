@@ -1,7 +1,7 @@
 #ifndef BEAVER_AI_H
 #define BEAVER_AI_H
 
-#include <Beaver/state.hpp>
+#include <components/state.hpp>
 
 #include <vector>
 #include <variant>

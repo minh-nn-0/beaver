@@ -4,7 +4,7 @@
 #include <mmath/geometry.hpp>
 #include <tiledwrapper/tiledwrapper.hpp>
 #include <sdlwrapper/sdlwrapper.hpp>
-#include <Beaver/camera.hpp>
+#include <beaver/camera.hpp>
 namespace beaver
 {
 	struct graphics
@@ -21,6 +21,13 @@ namespace beaver
 		int _line_thickness;
 		int _point_size;
 		
+		color get_draw_color()
+		{
+			color rs;
+			SDL_GetRenderDrawColor(_rdr, &rs[0], &rs[1], &rs[2], &rs[3]);
+
+			return rs;
+		};
 		void set_draw_color(const color& color)
 		{
 			_draw_color = color;
