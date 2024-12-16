@@ -25,6 +25,8 @@ if (WIN32)
 	find_package(SDL2_image PATHS ${CMAKE_CURRENT_SOURCE_DIR}/SDL2_image/cmake NO_DEFAULT_PATH)
 	find_package(SDL2_ttf PATHS ${CMAKE_CURRENT_SOURCE_DIR}/SDL2_ttf/cmake NO_DEFAULT_PATH)
 	find_package(SDL2_mixer PATHS ${CMAKE_CURRENT_SOURCE_DIR}/SDL2_mixer/cmake NO_DEFAULT_PATH)
+	
+	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_ttf SDL2_mixer)
 else()
 	FetchContent_Declare(
 		SDL2
