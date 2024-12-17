@@ -9,7 +9,7 @@ namespace beaver::component
 	// finite state machine. Typically used with enum, number or string.
 	// use std::unordered_map, so if need to use with custom type, 
 	// we alse need custom hash and comparison function.
-	template<std::equality_comparable T>
+	template<typename T>
 	struct fsm
 	{
 		using transition = std::unordered_map<T, std::function<void()>>;

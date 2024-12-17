@@ -27,7 +27,7 @@ add_library(lua
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ltable.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ltablib.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/ltm.c
-	${CMAKE_CURRENT_SOURCE_DIR}/src/lua.c
+	#${CMAKE_CURRENT_SOURCE_DIR}/src/lua.c
 	#${CMAKE_CURRENT_SOURCE_DIR}/src/luac.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/lundump.c
 	${CMAKE_CURRENT_SOURCE_DIR}/src/lutf8lib.c

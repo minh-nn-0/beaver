@@ -10,7 +10,7 @@ concept Numeric = std::integral<T> || std::floating_point<T>;
 namespace mmath
 {
 	//TODO make a generic vector type. so we can write ivec<2> vec1, vec1.at()....
-	template<Numeric UnitT>
+	template<typename UnitT>
 	struct vec2
 	{
 		UnitT x,y;
@@ -71,7 +71,7 @@ namespace mmath
 		
 		auto operator <=> (const vec2&) const = default;
 		
-		template<Numeric T>
+		template<typename T>
 		operator vec2<T>()
 		{
 			return vec2<T>

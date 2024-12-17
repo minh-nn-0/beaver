@@ -27,7 +27,6 @@ namespace beaver::system::collision
 		{
 			if (i != eid && entities.is_active(i) && entities.template has_component<position>(i) && entities.template has_component<aabb>(i))
 			{
-				mmath::frect A,B;
 				auto& posB = entities.template get_component<position>(i);
 				auto& cboxB = entities.template get_component<aabb>(i);
 				mmath::frect rectB = {posB->_value.x + cboxB->_value._pos.x,

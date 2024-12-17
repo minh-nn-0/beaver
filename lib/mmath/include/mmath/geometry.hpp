@@ -3,10 +3,10 @@
 
 #include <iostream>
 #include "linear_algebra.hpp"
-#include <SDL2/SDL.h>
+#include <SDL.h>
 namespace mmath
 {
-	template<Numeric UnitT>
+	template<typename UnitT>
 	struct rectangle
 	{
 		rectangle() = default;

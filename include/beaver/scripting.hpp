@@ -20,34 +20,20 @@
 #include <beaver/ecs/components/tileanimation.hpp>
 #include <beaver/ecs/components/particles.hpp>
 #include <beaver/ecs/components/time.hpp>
-// ================= Mainly dealing with table in Lua ================ 
+#include <exception>//////
+
+// TODO: For some reasons these bind functions if use all at one (for example use the beaver::bind_ecs_core_component ; 
+// using a few is fine, tried multiple combinations and doesn't look like any is the suspect) will
+// crash the program with a lot of weird linker errors on Windows, only in Debug Mode. And we don't fking know why 
+// 	Tried 
+// 	- increased stack size
+//	- inline all functions
+//	- remove unused arguments
 
 namespace beaver
 {
 	using namespace component;
-	inline mmath::irect table_to_irect(const sol::table& tbl)
-	{
-		return {
-			tbl.get_or("x", 0), tbl.get_or("y",0),
-			tbl.get_or("w", 0), tbl.get_or("h",0)
-		};
-	};
-	inline mmath::frect table_to_frect(const sol::table& tbl)
-	{
-		return {
-			tbl.get_or("x", 0.f), tbl.get_or("y",0.f),
-			tbl.get_or("w", 0.f), tbl.get_or("h",0.f)
-		};
-	};
-	inline sol::table rect_to_table(const mmath::frect& rect)
-	{
-		sol::table rs;
-		rs["x"] = rect._pos.x;
-		rs["y"] = rect._pos.x;
-		rs["w"] = rect._pos.x;
-		rs["h"] = rect._pos.x;
-		return rs;
-	};
+
 
 	void init_lua(sol::state& lua);
 	void bind_core(beaver::sdlgame&, sol::state& lua);
@@ -139,7 +125,7 @@ namespace beaver
 	};
 
 	template<typename... Ts>
-	void bind_rotation(beaver::ecs<Ts...>& ecs, sol::table& tbl, sol::state& lua)
+	void bind_rotation(beaver::ecs<Ts...>& ecs, sol::table& tbl)
 	{
 		tbl.set_function("get_rotation", [&](std::size_t eid) -> float
 		{
@@ -158,7 +144,7 @@ namespace beaver
 	};
 
 	template<typename... Ts>
-	void bind_flipflag(beaver::ecs<Ts...>& ecs, sol::table& tbl, sol::state& lua)
+	void bind_flipflag(beaver::ecs<Ts...>& ecs, sol::table& tbl)
 	{
 		tbl.set_function("set_flipflag", [&](std::size_t eid, unsigned flipflag)
 				{
@@ -243,7 +229,7 @@ namespace beaver
 
 	// ======================== IMAGE RENDER
 	template<typename... Ts>
-	void bind_image_render(beaver::ecs<Ts...>& ecs, sol::table& tbl, sol::state& lua)
+	void bind_image_render(beaver::ecs<Ts...>& ecs, sol::table& tbl)
 	{
 		tbl.set_function("set_image", [&](std::size_t eid, const std::string& img_name)
 				{
@@ -257,7 +243,7 @@ namespace beaver
 	};
 
 	template<typename... Ts>
-	void bind_entity_render(beaver::ecs<Ts...>& ecs, sdlgame& sdl, sol::table& tbl, sol::state& lua)
+	void bind_entity_render(beaver::ecs<Ts...>& ecs, sdlgame& sdl, sol::table& tbl)
 	{
 		tbl.set_function("render_entity", [&](std::size_t eid)
 				{
@@ -331,7 +317,7 @@ namespace beaver
 
 	// ========================= STRING FSM
 	template<typename... Ts>
-	void bind_state(beaver::ecs<Ts...>& ecs, sol::table& tbl, sol::state& lua)
+	void bind_state(beaver::ecs<Ts...>& ecs, sol::table& tbl)
 	{
 		tbl.set_function("get_state", [&](std::size_t eid) -> std::string
 				{
@@ -446,7 +432,7 @@ namespace beaver
 
 
 	template<typename... Ts>
-	void bind_particle(beaver::ecs<Ts...>& ecs, sol::table& tbl, sol::state& lua)
+	void bind_particle(beaver::ecs<Ts...>& ecs, sol::table& tbl)
 	{
 		tbl.set_function("set_particle_emitter_config", [&](std::size_t eid, const sol::table& param)
 				{
@@ -635,19 +621,19 @@ namespace beaver
 		bind_position(ecs, tbl, lua);
 		bind_velocity(ecs, tbl, lua);
 		bind_scale(ecs, tbl, lua);
-		bind_rotation(ecs, tbl, lua);
+		bind_rotation(ecs, tbl);
 		bind_pivot(ecs, tbl, lua);
-		bind_color(ecs,tbl,lua);
+		bind_color(ecs,tbl, lua);
 		bind_oscillation(ecs, tbl, lua);
-		bind_flipflag(ecs, tbl, lua);
+		bind_flipflag(ecs, tbl);
 		bind_tile_animation(ecs, tbl, lua);
 		bind_cbox(ecs,tbl,lua);
-		bind_state(ecs, tbl, lua);
-		bind_image_render(ecs, tbl, lua);
-		bind_entity_render(ecs, sdl, tbl, lua);
+		bind_state(ecs, tbl);
+		bind_image_render(ecs, tbl);
+		bind_entity_render(ecs, sdl, tbl);
 		bind_timer(ecs, tbl, lua);
 		bind_stopwatch(ecs, tbl, lua);
-		bind_particle(ecs, tbl, lua);
+		bind_particle(ecs, tbl);
 	};
 };
 

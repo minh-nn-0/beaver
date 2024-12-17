@@ -1,7 +1,7 @@
 #include <Beaver/graphics.hpp>
 
 
-int main()
+int main(int argc, char** argv)
 {
 	beaver::graphics graphics;
 	sdl::init_sdl("hihi", 1280, 720, &graphics._wd, &graphics._rdr);

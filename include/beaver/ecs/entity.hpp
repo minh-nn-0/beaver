@@ -22,7 +22,7 @@ namespace entity
 	concept Component = std::copy_constructible<T> && requires {std::is_default_constructible_v<T>;};
 	
 
-	template<Component... Ts>
+	template<typename... Ts>
 	struct manager_v2
 	{
 		manager_v2() = default;
@@ -228,7 +228,7 @@ namespace entity
 
 	};
 
-	template<Component... Ts> 
+	template<typename... Ts> 
 	struct manager
 	{
 		manager() = default;
@@ -397,6 +397,7 @@ namespace entity
 					
 					rs.push_back(tup);
 				};
+				
 			};
 
 			return rs;
@@ -404,7 +405,7 @@ namespace entity
 	};
 };
 
-	template<entity::Component... Ts>
+	template<typename... Ts>
 	using ecs = entity::manager_v2<Ts...>;
 };
 

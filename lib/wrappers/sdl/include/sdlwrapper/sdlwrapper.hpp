@@ -80,7 +80,7 @@ namespace sdl
 	{
 		texture() = default;
 		texture(const std::string& path, SDL_Renderer* rdr) 
-			: _name(std::filesystem::path(path).filename())	
+			: _name(std::filesystem::path(path).filename().string())	
 		{
 			SDL_Surface* surface = IMG_Load(path.c_str());
 			_t = SDL_CreateTextureFromSurface(rdr, surface);
