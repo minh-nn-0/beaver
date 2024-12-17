@@ -570,7 +570,32 @@ namespace beaver
 				{
 					auto& pm = ecs.template get_component<particle_emitter>(eid);
 					if (!pm.has_value()) throw std::runtime_error(std::format("particle emitter not found for entity {}",eid));
+
 					return pm->_particles.template get_component<color>(pid)->_value;
+				});
+		tbl.set_function("set_particle_color_gradient", [&](std::size_t eid, std::size_t pid, const sol::table& param)
+				{
+					auto& pm = ecs.template get_component<particle_emitter>(eid);
+					if (!pm.has_value()) throw std::runtime_error(std::format("particle emitter not found for entity {}",eid));
+					auto& color_gradient = pm->_particles.template get_or_set_component<particle_emitter::color_gradient>(pid)->_value;
+					for (auto keyframe_param: param)
+					{
+						auto time_param = keyframe_param.second.as<sol::table>()["time"];
+						auto color_param = keyframe_param.second.as<sol::table>()["color"];
+
+						if (!time_param.valid()) throw std::runtime_error(std::format("time properties not found in particle color keyframe config"));
+						if (!color_param.valid()) throw std::runtime_error(std::format("color properties not found in particle color keyframe config"));
+
+						float new_time = time_param.get<float>();
+						color new_color;
+						for (int i = 0; i != 4; i++)
+						{
+							new_color._value[i] = color_param.get<sol::table>()[i+1];
+						};
+
+						color_gradient.push_back(color_keyframe{new_time, new_color});
+					};
+					std::ranges::sort(color_gradient, [](auto&& color1, auto&& color2){return color1._time < color2._time;});
 				});
 		tbl.set_function("get_particle_size", [&](std::size_t eid, std::size_t pid) -> std::pair<float,float>
 				{
