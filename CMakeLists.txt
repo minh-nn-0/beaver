@@ -30,7 +30,9 @@ add_subdirectory(${VENDOR_DIR})
 add_subdirectory(lib)
 
 target_link_libraries(beaver PUBLIC sdlwrapper imgui_sdl mmath tiledwrapper lua)
-target_link_libraries(beaver PUBLIC "-lstdc++exp")
+if (WIN32)
+	target_link_libraries(beaver PUBLIC "-lstdc++exp")
+endif()
 #set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra") #Stimulate release mode, does work
 
 
