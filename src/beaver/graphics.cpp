@@ -172,7 +172,8 @@ void beaver::graphics::texture(const sdl::texture& tex,
 void beaver::graphics::text_solid(const mmath::fvec2& pos,
 				const sdl::font& font,
 				const std::string& content,
-				int wraplength)
+				int wraplength,
+				TEXT_ALIGNMENT alignment)
 {
 	SDL_Color fg {_draw_color[0], _draw_color[1], _draw_color[2], _draw_color[3]};
 	SDL_Surface* temp = TTF_RenderUTF8_Solid_Wrapped(font, content.c_str(), fg, wraplength);
@@ -184,12 +185,19 @@ void beaver::graphics::text_solid(const mmath::fvec2& pos,
 						static_cast<float>(text._width),
 						static_cast<float>(text._height)};
 
+	switch (alignment)
+	{
+		case (TEXT_ALIGNMENT::LEFT): break;
+		case (TEXT_ALIGNMENT::CENTER): dst._pos.x -= dst._size.x / 2 ; break;
+		case (TEXT_ALIGNMENT::RIGHT): dst._pos.x -= dst._size.x; break;
+	};
 	texture(text, dst);
 };
 void beaver::graphics::text_blended(const mmath::fvec2& pos,
 				const sdl::font& font,
 				const std::string& content,
-				int wraplength)
+				int wraplength,
+				TEXT_ALIGNMENT alignment)
 {
 	SDL_Color fg {_draw_color[0], _draw_color[1], _draw_color[2], _draw_color[3]};
 	SDL_Surface* temp = TTF_RenderUTF8_Blended_Wrapped(font, content.c_str(), fg, wraplength);
@@ -201,6 +209,12 @@ void beaver::graphics::text_blended(const mmath::fvec2& pos,
 						static_cast<float>(text._width),
 						static_cast<float>(text._height)};
 
+	switch (alignment)
+	{
+		case (TEXT_ALIGNMENT::LEFT): break;
+		case (TEXT_ALIGNMENT::CENTER): dst._pos.x -= dst._size.x / 2 ; break;
+		case (TEXT_ALIGNMENT::RIGHT): dst._pos.x -= dst._size.x; break;
+	};
 	texture(text, dst);
 };
 

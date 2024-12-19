@@ -134,7 +134,9 @@ void beaver::bind_core(beaver::sdlgame& game, sol::state& lua)
 				sdl::texture* to_draw = game._assets.get<sdl::texture>(texture_name);
 				game._graphics.texture(*to_draw, dst, src, angle, pivot, flipflag);
 			});
+	
 
+	// Draw using topleft
 	lua.set_function("DRAW_TEXT", [&](float x, float y, const std::string& fontname, const std::string& content, int wraplength, bool blended)
 			{
 				sdl::font* font = game._assets.get<sdl::font>(fontname);
@@ -143,8 +145,23 @@ void beaver::bind_core(beaver::sdlgame& game, sol::state& lua)
 				else 
 					game._graphics.text_solid({x,y}, *font, content, wraplength);
 			});
-	// 
-	
+	// draw using center
+	lua.set_function("DRAW_TEXT_CENTERED", [&](float x, float y, const std::string& fontname, const std::string& content, int wraplength, bool blended)
+			{
+				sdl::font* font = game._assets.get<sdl::font>(fontname);
+				if (blended) 
+					game._graphics.text_blended({x,y}, *font, content, wraplength, graphics::TEXT_ALIGNMENT::CENTER);
+				else 
+					game._graphics.text_solid({x,y}, *font, content, wraplength, graphics::TEXT_ALIGNMENT::CENTER);
+			});
+	lua.set_function("DRAW_TEXT_RIGHT", [&](float x, float y, const std::string& fontname, const std::string& content, int wraplength, bool blended)
+			{
+				sdl::font* font = game._assets.get<sdl::font>(fontname);
+				if (blended) 
+					game._graphics.text_blended({x,y}, *font, content, wraplength, graphics::TEXT_ALIGNMENT::RIGHT);
+				else 
+					game._graphics.text_solid({x,y}, *font, content, wraplength, graphics::TEXT_ALIGNMENT::RIGHT);
+			});
 	lua.set_function("IMAGE_SIZE", [&](const std::string& name) -> sol::table
 			{
 				if (!game._assets.get_map<sdl::texture>().contains(name))

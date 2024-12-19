@@ -73,6 +73,12 @@ end
 function beaver.draw_text(x, y, fontname, content, wraplength, blended)
 	DRAW_TEXT(x,y,fontname,content,wraplength or 0, blended or false)
 end
+function beaver.draw_text_centered(x, y, fontname, content, wraplength, blended)
+	DRAW_TEXT_CENTERED(x,y,fontname,content,wraplength or 0, blended or false)
+end
+function beaver.draw_text_right(x, y, fontname, content, wraplength, blended)
+	DRAW_TEXT_RIGHT(x,y,fontname,content,wraplength or 0, blended or false)
+end
 -- @param r integer
 -- @param g integer
 -- @param b integer

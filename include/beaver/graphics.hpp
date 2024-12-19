@@ -53,15 +53,21 @@ namespace beaver
 				const mmath::fvec2 pivot = {0,0},
 				unsigned flipflags = 0);
 		
+		enum class TEXT_ALIGNMENT
+		{
+			LEFT, CENTER, RIGHT
+		};
 		void text_solid(const mmath::fvec2&,
 				const sdl::font&, 
 				const std::string&, 
-				int wraplength = 0);
+				int wraplength = 0,
+				TEXT_ALIGNMENT alignment = TEXT_ALIGNMENT::LEFT);
 		
 		void text_blended(const mmath::fvec2&,
 				const sdl::font&, 
 				const std::string&, 
-				int wraplength = 0);
+				int wraplength = 0,
+				TEXT_ALIGNMENT alignment = TEXT_ALIGNMENT::LEFT);
 
 		void tilemap(const tiled::tilemap&, const mmath::fvec2&, const std::vector<sdl::texture*>&);
 	};
