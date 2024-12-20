@@ -5,7 +5,7 @@ project(sdlwrapper VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_library(sdlwrapper SHARED src/sdlwrapper.cpp)
+add_library(sdlwrapper src/sdlwrapper.cpp)
 
 target_include_directories(sdlwrapper PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
@@ -22,7 +22,9 @@ if(TARGET SDL2::SDL2main)
     # It has an implicit dependency on SDL2 functions, so it MUST be added before SDL2::SDL2 (or SDL2::SDL2-static)
 	target_link_libraries(sdlwrapper PUBLIC SDL2::SDL2main)
 endif()
-
-target_link_libraries(sdlwrapper PUBLIC SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
-
+if (BUILD_SHARED_LIBS)
+	target_link_libraries(sdlwrapper PUBLIC SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
+else()
+	target_link_libraries(sdlwrapper PUBLIC SDL2::SDL2-static SDL2_image::SDL2_image-static SDL2_ttf::SDL2_ttf-static SDL2_mixer::SDL2_mixer-static)
+endif()
 add_subdirectory(test)

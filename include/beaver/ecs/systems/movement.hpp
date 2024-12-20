@@ -54,7 +54,7 @@ namespace beaver::system::movement
 				velocity new_vel = entities.template get_component<velocity>(eid).value();
 
 
-				if (!entities.template has_tag(eid, "no_gravity"))
+				if (!entities.has_tag(eid, "no_gravity"))
 					new_vel = apply_gravity(new_vel, gravity, dt);
 
 				if (entities.template has_component<oscillation>(eid))

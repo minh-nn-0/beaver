@@ -29,11 +29,6 @@ namespace mmath
 			return {_pos * scale, _size * scale};
 		};
 
-		friend std::ostream& operator << (std::ostream& os, rectangle& r)
-		{
-			return os << r._min << ", " << r._max;;
-		};
-
 		auto operator <=> (const rectangle&) const = default;
 
 		template<Numeric T>

@@ -5,6 +5,7 @@ add_executable(testentity EXCLUDE_FROM_ALL test_entity.cpp)
 add_executable(testai EXCLUDE_FROM_ALL test_ai.cpp)
 add_executable(testgraphics EXCLUDE_FROM_ALL testgraphics.cpp)
 add_executable(testscript EXCLUDE_FROM_ALL testscripting.cpp)
+add_executable(testems EXCLUDE_FROM_ALL testems.cpp)
 
 target_link_libraries(testsdl beaver)
 target_link_libraries(teststate beaver)
@@ -13,4 +14,8 @@ target_link_libraries(testentity beaver)
 target_link_libraries(testai beaver)
 target_link_libraries(testgraphics beaver)
 target_link_libraries(testscript beaver)
+target_link_libraries(testems beaver)
+
+target_link_options(testems PRIVATE --preload-file=endlur_tileset.png -sUSE_SDL=2 -sUSE_SDL_IMAGE=2 -sUSE_SDL_TTF=2 -sUSE_SDL_MIXER=2) 
+set_target_properties(testems PROPERTIES SUFFIX ".html")
 

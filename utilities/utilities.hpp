@@ -7,6 +7,7 @@
 #include <vector>
 #include <filesystem>
 #include <fstream>
+#include <numbers>
 
 #include <mmath/core.hpp>
 namespace utils
