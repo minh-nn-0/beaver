@@ -190,12 +190,13 @@ namespace beaver
 		tbl.set_function("set_cbox", sol::overload(
 				[&](std::size_t eid, float x, float y, float w, float h)
 				{
-					ecs.template set_component<aabb>(eid, {._value = mmath::frect {x,y,w,h}});
+					auto& cbox = ecs.template set_component<aabb>(eid, {._value = mmath::frect {x,y,w,h}});
+
 				},
 				[&](std::size_t eid, const sol::table& rect)
 				{
 					mmath::frect box {rect["x"], rect["y"], rect["w"], rect["h"]};
-					ecs.template set_component<aabb>(eid, {._value = box});
+					auto& cbox = ecs.template set_component<aabb>(eid, {._value = box});
 				}));
 		tbl.set_function("unset_cbox", [&](std::size_t eid)
 				{

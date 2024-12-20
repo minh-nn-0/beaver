@@ -3,6 +3,7 @@
 #include <beaver/ecs/entity.hpp>
 #include <beaver/ecs/components/position.hpp>
 #include <beaver/ecs/components/cbox.hpp>
+#include <beaver/ecs/components/scale.hpp>
 
 namespace beaver::system::collision
 {
@@ -18,17 +19,29 @@ namespace beaver::system::collision
 			return rs;
 		
 		auto& posA = entities.template get_component<position>(eid);
-		auto& cboxA = entities.template get_component<aabb>(eid);
+		auto cboxA = entities.template get_component<aabb>(eid);
+
+		if (auto scaleA = entities.template get_component<component::scale>(eid); scaleA.has_value())
+		{
+			cboxA->_value._pos *= scaleA->_value;
+			cboxA->_value._size *= scaleA->_value;
+		};
 		mmath::frect rectA = {posA->_value.x + cboxA->_value._pos.x,
 							posA->_value.y + cboxA->_value._pos.y,
 							cboxA->_value._size.x,
 							cboxA->_value._size.y};
+
 		for (std::size_t i = 0; i!= entities.size(); i++)
 		{
 			if (i != eid && entities.is_active(i) && entities.template has_component<position>(i) && entities.template has_component<aabb>(i))
 			{
 				auto& posB = entities.template get_component<position>(i);
-				auto& cboxB = entities.template get_component<aabb>(i);
+				auto cboxB = entities.template get_component<aabb>(i);
+				if (auto& scaleB = entities.template get_component<component::scale>(i); scaleB.has_value())
+				{
+					cboxB->_value._pos *= scaleB->_value;
+					cboxB->_value._size *= scaleB->_value;
+				};
 				mmath::frect rectB = {posB->_value.x + cboxB->_value._pos.x,
 									posB->_value.y + cboxB->_value._pos.y,
 									cboxB->_value._size.x,
