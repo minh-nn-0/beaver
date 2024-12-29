@@ -1,10 +1,5 @@
 #include <beaver/graphics.hpp>
 
-mmath::fvec2 position_with_cam(const mmath::fvec2& pos, const beaver::camera2D& cam)
-{
-	return (pos - cam._view._pos) * cam._zoom;
-};
-
 beaver::graphics::graphics(SDL_Window* wd, SDL_Renderer* rdr, camera2D* cam)
 	: _wd(wd), _rdr(rdr), _cam(cam)
 {
@@ -13,7 +8,7 @@ beaver::graphics::graphics(SDL_Window* wd, SDL_Renderer* rdr, camera2D* cam)
 void beaver::graphics::point(const mmath::fvec2& p)
 {
 	mmath::fvec2 draw_point {p};
-	if (_cam != nullptr) draw_point = position_with_cam(draw_point, *_cam);
+	if (_cam != nullptr && _using_cam) draw_point = position_with_cam(draw_point, *_cam);
 	SDL_RenderDrawPointF(_rdr, draw_point.x, draw_point.y);
 };
 
@@ -26,7 +21,7 @@ void beaver::graphics::line(const mmath::fvec2& p1, const mmath::fvec2& p2)
 {
 	mmath::fvec2 draw_point1 {p1};
 	mmath::fvec2 draw_point2 {p2};
-	if (_cam != nullptr)
+	if (_cam != nullptr && _using_cam)
 	{
 		draw_point1 = position_with_cam(draw_point1, *_cam);
 		draw_point2 = position_with_cam(draw_point2, *_cam);
@@ -44,16 +39,18 @@ void beaver::graphics::line(float x1, float y1, float x2, float y2)
 void beaver::graphics::rect(const mmath::frect& rect, bool filled)
 {
 	mmath::frect drawrect = rect;
-	if (_cam != nullptr) 
+	if (_cam != nullptr && _using_cam) 
 	{
 		drawrect._pos = position_with_cam(drawrect._pos, *_cam);
 		drawrect._size = drawrect._size * _cam->_zoom;
 	};
 	SDL_FRect sdl_drawrect = drawrect;
+
+	SDL_FRect* p_sdl_drawrect = sdl_drawrect.w <= 0 || sdl_drawrect.h <= 0 ? nullptr : &sdl_drawrect; 
 	if (filled) 
-		SDL_RenderFillRectF(_rdr, &sdl_drawrect);
+		SDL_RenderFillRectF(_rdr, p_sdl_drawrect);
 	else 
-		SDL_RenderDrawRectF(_rdr, &sdl_drawrect);
+		SDL_RenderDrawRectF(_rdr, p_sdl_drawrect);
 };
 
 void beaver::graphics::rect(float x, float y, float width, float height, bool filled)
@@ -68,7 +65,7 @@ void beaver::graphics::circle(const mmath::circle& circle, bool filled)
 	mmath::fvec2 center = circle._center;
 	float radius = circle._radius;
 
-	if (_cam != nullptr)
+	if (_cam != nullptr && _using_cam)
 	{
 		center = position_with_cam(center, *_cam);
 		radius *= _cam->_zoom;
@@ -147,21 +144,18 @@ void beaver::graphics::texture(const sdl::texture& tex,
 	SDL_Rect sdlsrc_ = src;
 	SDL_FRect sdldst_ = dst;
 
+
+	if (_cam != nullptr && _using_cam)
+	{
+		mmath::fvec2 pos = position_with_cam(dst._pos, *_cam);
+		sdldst_.x = pos.x;
+		sdldst_.y = pos.y;
+
+		sdldst_.w = sdldst_.w * _cam->_zoom;
+		sdldst_.h = sdldst_.h * _cam->_zoom;
+	};
 	SDL_Rect* sdlsrc = sdlsrc_.w == 0 ? nullptr : &sdlsrc_; 
 	SDL_FRect* sdldst = sdldst_.w == 0 ? nullptr : &sdldst_; 
-
-	if (_cam != nullptr)
-	{
-		if (sdldst != nullptr)
-		{
-			mmath::fvec2 pos = position_with_cam(dst._pos, *_cam);
-			sdldst->x = pos.x;
-			sdldst->y = pos.y;
-
-			sdldst->w = sdldst->w * _cam->_zoom;
-			sdldst->h = sdldst->h * _cam->_zoom;
-		};
-	};
 	SDL_FPoint p;
 	p.x = pivot.x;
 	p.y = pivot.y;
@@ -175,23 +169,7 @@ void beaver::graphics::text_solid(const mmath::fvec2& pos,
 				int wraplength,
 				TEXT_ALIGNMENT alignment)
 {
-	SDL_Color fg {_draw_color[0], _draw_color[1], _draw_color[2], _draw_color[3]};
-	SDL_Surface* temp = TTF_RenderUTF8_Solid_Wrapped(font, content.c_str(), fg, wraplength);
-	
-	sdl::texture text {SDL_CreateTextureFromSurface(_rdr, temp)};
-	SDL_FreeSurface(temp);
-
-	mmath::frect dst = {pos.x, pos.y, 
-						static_cast<float>(text._width),
-						static_cast<float>(text._height)};
-
-	switch (alignment)
-	{
-		case (TEXT_ALIGNMENT::LEFT): break;
-		case (TEXT_ALIGNMENT::CENTER): dst._pos.x -= dst._size.x / 2 ; break;
-		case (TEXT_ALIGNMENT::RIGHT): dst._pos.x -= dst._size.x; break;
-	};
-	texture(text, dst);
+	text(pos, make_text_solid(_rdr, font, content, _draw_color, wraplength), alignment);
 };
 void beaver::graphics::text_blended(const mmath::fvec2& pos,
 				const sdl::font& font,
@@ -199,12 +177,13 @@ void beaver::graphics::text_blended(const mmath::fvec2& pos,
 				int wraplength,
 				TEXT_ALIGNMENT alignment)
 {
-	SDL_Color fg {_draw_color[0], _draw_color[1], _draw_color[2], _draw_color[3]};
-	SDL_Surface* temp = TTF_RenderUTF8_Blended_Wrapped(font, content.c_str(), fg, wraplength);
-	
-	sdl::texture text {SDL_CreateTextureFromSurface(_rdr, temp)};
-	SDL_FreeSurface(temp);
+	text(pos, make_text_blended(_rdr, font, content, _draw_color, wraplength), alignment);
+};
 
+void beaver::graphics::text(const mmath::fvec2& pos,
+		const sdl::texture& text,
+		TEXT_ALIGNMENT alignment)
+{
 	mmath::frect dst = {pos.x, pos.y, 
 						static_cast<float>(text._width),
 						static_cast<float>(text._height)};
@@ -217,8 +196,6 @@ void beaver::graphics::text_blended(const mmath::fvec2& pos,
 	};
 	texture(text, dst);
 };
-
-
 void draw_layers(const tiled::layer& layer,
 		tiled::drawdata	parent_drawdata,
 		beaver::graphics& graphic, 
@@ -250,10 +227,11 @@ void draw_layers(const tiled::layer& layer,
 					mmath::irect src(tiled::rect_at(tileid, ts));
 					mmath::frect dst(tiled::rect_at(i, tm));
 					
+					dst._pos = (dst._pos + offset) * parallax;
 					// adding cam offset here is wrong
 					if (graphic._cam) 
 					{
-						dst._pos = (position_with_cam(dst._pos, *graphic._cam) /* + cam._offset */ + offset) * parallax;
+						dst._pos = position_with_cam(dst._pos, *graphic._cam) /* + cam._offset */ + offset * parallax;
 						dst._size = dst._size * graphic._cam->_zoom;
 					};
 					//dst._pos.x -= cam._view._pos.x * parallax.x - offset.x;
@@ -281,5 +259,86 @@ void beaver::graphics::tilemap(const tiled::tilemap& tm,
 {
 	for (const auto& layer: tm._layerdata._layers)
 		draw_layers(layer, {}, *this, tm, textures);
+};
+
+using namespace beaver::tile;
+void draw_layers(const layer_t& layer,
+		const mmath::fvec2& pos,
+		drawdata parent_drawdata,
+		beaver::graphics& graphic, 
+		const tilemap& tm,
+		const std::vector<sdl::texture*>& textures)
+{
+	const tilelayer& tl = std::get<tilelayer>(layer._data); 
+	auto [parallax, offset, tint] = layer._drawdata + parent_drawdata;
+	for (int i = 0; i != tl._data.size(); i++)
+	{
+		if (long tile = tl._data.at(i); tile >= 0)
+		{
+			auto [flipflag, tileid] = tiled::get_flipflags(tile);
+
+			const tileset& ts = tm.tileset_at(tileid); 
+			const sdl::texture* ts_tex = *(std::ranges::find_if(textures, 
+						[=](auto&& tex){return ts._filename == tex->_name;}));
+			
+			SDL_SetTextureAlphaMod(*ts_tex, tint[3]);
+			SDL_SetTextureColorMod(*ts_tex, tint[0], tint[1], tint[2]);
+			
+			mmath::irect src(tiled::rect_at(tileid, ts));
+			mmath::frect dst(tiled::rect_at(i, tm));
+			
+			dst._pos = dst._pos + pos;
+			// adding cam offset here is wrong
+			//if (graphic._cam != nullptr && graphic._using_cam) 
+			//{
+			//	dst._pos = (position_with_cam(dst._pos, *graphic._cam) /* + cam._offset */ + offset) * parallax;
+			//	dst._size = dst._size * graphic._cam->_zoom;
+			//};
+			//dst._pos.x -= cam._view._pos.x * parallax.x - offset.x;
+			//dst._pos.y -= cam._view._pos.y * parallax.y - offset.y;
+			
+			graphic.texture(*ts_tex, dst, src, 0, {0,0}, flipflag);
+			
+			SDL_SetTextureAlphaMod(*ts_tex, 255);
+			SDL_SetTextureColorMod(*ts_tex, 255, 255, 255);
+		};
+	};
+};
+
+void beaver::graphics::tilemap(const beaver::tile::tilemap& tm,
+		const mmath::fvec2& pos,
+		const std::vector<sdl::texture*>& textures)
+{
+	auto extract_groups = [](std::string&& string) -> std::vector<std::string>
+	{
+		std::vector<std::string> rs;
+		for (std::size_t i = 0; i!= string.size(); i++)
+		{
+			if (string[i] == '.') 
+				rs.emplace_back(string.substr(0,i));
+		};
+
+		return rs;
+	};
+
+	for (std::size_t i = 0; i != tm._layers.second.size(); i++)
+	{ 
+		const layer_t& layer = tm._layers.second[i];
+		if (layer._visible && std::holds_alternative<tilelayer>(layer._data))
+		{
+			drawdata parent_drawdata;
+			bool parent_visible {true};
+			for (const auto& parent: extract_groups(tm.get_layer_name(i)))
+			{
+				const layer_t& parent_layer = tm.get_layer(parent);
+				assert(std::holds_alternative<std::monostate>(parent_layer._data));
+				parent_drawdata = parent_drawdata + parent_layer._drawdata;
+				parent_visible &= parent_layer._visible;
+			};
+			
+			if (parent_visible)
+				draw_layers(layer, pos, parent_drawdata, *this, tm, textures);
+		};
+	};
 };
 

@@ -1,5 +1,8 @@
 local beaver = {}
 
+beaver.FLIP_H = FLIP_H
+beaver.FLIP_V = FLIP_V
+beaver.FLIP_NONE = FLIP_NONE
 --- @param path string
 --- @param custom_name? string
 function beaver.new_image(path, custom_name)
@@ -34,6 +37,9 @@ function beaver.get_elapsed_time()
 	return GET_ELAPSED_TIME()
 end
 
+function beaver.set_using_cam(usingcam)
+	SET_USING_CAM(usingcam);
+end
 --- @param x number
 --- @param y number
 function beaver.draw_point(x,y)
@@ -91,6 +97,9 @@ function beaver.clear()
 	CLS()
 end
 
+function beaver.set_texture_blend_mode(texture_name, blend_mode)
+	SET_TEXTURE_BLEND_MODE(texture_name, blend_mode)
+end
 --- @param x integer
 --- @param y integer
 function beaver.set_scale(x,y)
@@ -101,10 +110,22 @@ function beaver.set_render_logical_size(x,y)
 	SET_RENDER_LOGICAL_SIZE(x,y)
 end
 
-function beaver.get_render_logical_size(x,y)
-	GET_RENDER_LOGICAL_SCALE(x,y)
+function beaver.get_render_logical_size()
+	return GET_RENDER_LOGICAL_SIZE()
+end
+function beaver.get_render_output_size()
+	return GET_RENDER_OUTPUT_SIZE()
+end
+function beaver.create_texture_for_drawing(texture_name, width, height)
+	local w,h = GET_RENDER_OUTPUT_SIZE()
+	width = width and width or w
+	height = height and height or h
+	CREATE_TEXTURE_FOR_DRAWING(texture_name, width, height)
 end
 
+function beaver.set_render_target(target_name)
+	SET_RENDER_TARGET(target_name and target_name or "")
+end
 function beaver.set_fullscreen(fc)
 	SET_FULLSCREEN(fc)
 end

@@ -8,35 +8,48 @@
 #include <filesystem>
 #include <fstream>
 #include <numbers>
-
+#include <print>
 #include <mmath/core.hpp>
 namespace utils
 {
 	using color = std::array<unsigned char, 4>;
-	inline std::array<unsigned char,4> hex_to_rgba(const std::string& hex) {
-		std::stringstream ss;
+	template<typename T>
+	inline std::array<T,4> hex_to_rgba(const std::string& hex) {
 		std::string hex_str = hex.substr(hex[0] == '#' ? 1 : 0);
 		if (hex_str.length() != 6 && hex_str.length() != 8) 
 			throw std::invalid_argument("bad argument, incorrect format for hex");
 		
-		std::array<unsigned char,4> rgba {0,0,0,255};
-		for (int i = 0; i != hex_str.length()/2; i++)
+		std::array<T,4> rgba {0,0,0,255};
+		for (size_t i = 0; i < hex_str.length() / 2; ++i) 
 		{
-			ss.clear();
-			ss << hex_str.substr(i*2,2);
-			ss >> std::hex >> rgba[i];
+        	rgba[i] = static_cast<T>(
+        	    std::stoul(hex_str.substr(i * 2, 2), nullptr, 16));
 		};
+		//for (int i = 0; i != hex_str.length()/2; i++)
+		//{
+		//	ss.clear();
+		//	ss << hex_str.substr(i*2,2);
+		//	ss >> std::hex >> rgba[i];
+		//};
 		return rgba;
 	}
 
-	inline std::array<float, 4> normalize_rgba(const std::array<unsigned char, 4>& rgba)
+	template<typename T>
+	constexpr std::array<float, 4> normalize_rgba(const std::array<T, 4>& rgba)
 	{
 		std::array<float, 4> rs;
 		for (int i = 0; i != 4; i++) rs[i] = rgba[i] / 255.f;
 
 		return rs;
 	};
+	template<typename T>
+	constexpr std::array<T, 4> denormalize_rgba(const std::array<float, 4>& rgba)
+	{
+		std::array<T, 4> rs;
+		for (int i = 0; i != 4; i++) rs[i] = static_cast<T>(rgba[i] * 255.f);
 
+		return rs;
+	};
 
 	constexpr auto print_name = [](auto&& arg)
 	{return arg._name;};
@@ -64,7 +77,7 @@ namespace utils
 		return rs;
 	};
 
-	inline std::array<float, 4> blend_rgba_multiply(const std::array<float, 4>& c1, const std::array<float ,4>& c2)
+	constexpr std::array<float, 4> blend_rgba_multiply(const std::array<float, 4>& c1, const std::array<float ,4>& c2)
 	{
 		std::array<float, 4> rs;
 
@@ -75,8 +88,15 @@ namespace utils
 				
 		return rs;
 	};
-	
-	inline std::array<float, 4> blend_rgba_prealphamultiply(const std::array<float, 4>& c1, const std::array<float ,4>& c2)
+	constexpr std::array<unsigned char, 4> blend_rgba_multiply(const std::array<unsigned char, 4>& c1, const std::array<unsigned char, 4>& c2)
+	{
+		return denormalize_rgba<unsigned char>(blend_rgba_multiply(normalize_rgba(c1), normalize_rgba(c2)));
+	};
+	constexpr std::array<int, 4> blend_rgba_multiply(const std::array<int, 4>& c1, const std::array<int, 4>& c2)
+	{
+		return denormalize_rgba<int>(blend_rgba_multiply(normalize_rgba(c1), normalize_rgba(c2)));
+	};
+	constexpr std::array<float, 4> blend_rgba_prealphamultiply(const std::array<float, 4>& c1, const std::array<float ,4>& c2)
 	{
 		std::array<float, 4> rs;
 		

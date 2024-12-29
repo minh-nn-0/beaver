@@ -54,7 +54,7 @@ tiled::drawdata::drawdata(const nlohmann::json& j)
 	{
 		std::string tint_hex = j.at("tintcolor");
 		if (tint_hex.length() == 9) tint_hex = correct_format_tiledcolor(tint_hex);
-		_tint = utils::normalize_rgba(utils::hex_to_rgba(tint_hex));
+		_tint = utils::normalize_rgba(utils::hex_to_rgba<unsigned char>(tint_hex));
 	};
 }
 
@@ -207,7 +207,7 @@ tiled::tilemap::tilemap(const std::filesystem::path& p)
 	};
 
 	if (tmj.count("backgroundcolor") > 0) 
-		_bgcolor = utils::hex_to_rgba(correct_format_tiledcolor(tmj.at("backgroundcolor")));
+		_bgcolor = utils::hex_to_rgba<unsigned char>(correct_format_tiledcolor(tmj.at("backgroundcolor")));
 
 	// LAYERS
 	for (auto& layer: tmj.at("layers")) 

@@ -1,10 +1,10 @@
-#include <beaver/scripting.hpp>
-void beaver::init_lua(sol::state& lua)
+#include <beaver/scripting/scripting_core.hpp>
+void beaver::scripting::init_lua(sol::state& lua)
 {
 	lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::package, sol::lib::math, sol::lib::debug, sol::lib::string);
 	lua.script((std::string("package.path = package.path .. \";") + std::string(ENGINE_PATH) + "/utilities/luamodules/?.lua\"").c_str());
 };
-void beaver::bind_core(beaver::sdlgame& game, sol::state& lua)
+void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 {
 	// ASSETS
 	lua.set_function("NEW_IMAGE", [&](const std::string& path, const std::string& custom_name)
@@ -64,6 +64,15 @@ void beaver::bind_core(beaver::sdlgame& game, sol::state& lua)
 	lua["FLIP_H"] = SDL_FLIP_HORIZONTAL;
 	lua["FLIP_V"] = SDL_FLIP_VERTICAL;
 	lua.set_function("CLS", [&]{ SDL_RenderClear(game._graphics._rdr);});
+	lua.set_function("SET_TEXTURE_BLEND_MODE", [&](const std::string& texturename, const std::string& blendmode)
+			{
+				sdl::texture* tex = game._assets.get<sdl::texture>(texturename);
+				if (blendmode == "additive") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_ADD);
+				if (blendmode == "modulate") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_MOD);
+				if (blendmode == "multiply") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_MUL);
+				if (blendmode == "blend") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_BLEND);
+			});
+	lua.set_function("CLS", [&]{ SDL_RenderClear(game._graphics._rdr);});
 	lua.set_function("SET_DRAW_COLOR", 
 			[&](unsigned char r, unsigned char g, unsigned char b, unsigned char a)
 			{game._graphics.set_draw_color({r,g,b,a});});
@@ -74,13 +83,31 @@ void beaver::bind_core(beaver::sdlgame& game, sol::state& lua)
 	lua.set_function("SET_RENDER_LOGICAL_SIZE", [&](int x, int y)
 			{SDL_RenderSetLogicalSize(game._graphics._rdr, x, y);});
 
-	lua.set_function("GET_RENDER_LOGICAL_SIZE", [&]() -> sol::table
+	lua.set_function("GET_RENDER_LOGICAL_SIZE", [&]() -> std::pair<int,int>
 			{
 				int x, y;
 				SDL_RenderGetLogicalSize(game._graphics._rdr, &x, &y);
-				return lua.create_table_with("x", x, "y", y);
+				return std::make_pair(x,y);
 			});
+	lua.set_function("GET_RENDER_OUTPUT_SIZE", [&]() -> std::pair<int,int>
+			{
+				int x, y;
+				SDL_GetRendererOutputSize(game._graphics._rdr, &x, &y);
+				return std::make_pair(x,y);
+			});
+	lua.set_function("CREATE_TEXTURE_FOR_DRAWING", [&](const std::string& name, int width, int height)
+			{
+				game._assets.add<sdl::texture>(name, sdl::texture{SDL_CreateTexture(game._graphics._rdr, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height)});
+			});
+
+	lua.set_function("SET_RENDER_TARGET", [&](const std::string& name)
+			{
+				if (name.empty()) SDL_SetRenderTarget(game._graphics._rdr, nullptr);
+				else SDL_SetRenderTarget(game._graphics._rdr, *game._assets.get<sdl::texture>(name));
+			});
+
 	lua.set_function("SET_FULLSCREEN", [&](bool fc){SDL_SetWindowFullscreen(game._graphics._wd, fc);});
+	lua.set_function("SET_USING_CAM", [&](bool usingcam){game._graphics.set_cam(usingcam);});
 	lua.set_function("DRAW_POINT", [&](float x, float y)
 			{
 				game._graphics.point(x,y);	
@@ -203,3 +230,15 @@ void beaver::bind_core(beaver::sdlgame& game, sol::state& lua)
 				Mix_Volume(channel, volume);
 			});
 };
+
+
+//void beaver::bind_tiled(beaver::sdlgame& game, sol::table& tbl, sol::state& lua)
+//{
+//	tbl.set_function("add_map");
+//	tbl.set_function("draw_map");
+//	tbl.set_function("");
+//	tbl.set_function("add_map");
+//	tbl.set_function("add_map");
+//	tbl.set_function("add_map");
+//	tbl.set_function("add_map");
+//};

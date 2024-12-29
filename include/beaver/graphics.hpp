@@ -5,8 +5,15 @@
 #include <tiledwrapper/tiledwrapper.hpp>
 #include <sdlwrapper/sdlwrapper.hpp>
 #include <beaver/camera.hpp>
+#include <beaver/tile.hpp>
+#include <beaver/text.hpp>
 namespace beaver
 {
+	constexpr mmath::fvec2 position_with_cam(const mmath::fvec2& pos, const beaver::camera2D& cam)
+	{
+		return (pos - cam._view._pos + cam._offset) * cam._zoom;
+	};
+
 	struct graphics
 	{
 		graphics() = default;
@@ -16,6 +23,7 @@ namespace beaver
 		
 		camera2D* _cam {nullptr};
 
+		bool _using_cam {true};
 		using color = std::array<unsigned char, 4>;
 		color _draw_color;
 		int _line_thickness;
@@ -34,6 +42,7 @@ namespace beaver
 			SDL_SetRenderDrawColor(_rdr, color[0], color[1], color[2], color[3]);
 		};
 
+		void set_cam(bool usingcam) {_using_cam = usingcam;};
 		void point(const mmath::fvec2&);
 		void point(float x, float y);
 
@@ -69,7 +78,11 @@ namespace beaver
 				int wraplength = 0,
 				TEXT_ALIGNMENT alignment = TEXT_ALIGNMENT::LEFT);
 
+		void text(const mmath::fvec2&,
+				const sdl::texture& text,
+				TEXT_ALIGNMENT alignment = TEXT_ALIGNMENT::LEFT);
 		void tilemap(const tiled::tilemap&, const mmath::fvec2&, const std::vector<sdl::texture*>&);
+		void tilemap(const beaver::tile::tilemap&, const mmath::fvec2&, const std::vector<sdl::texture*>&);
 	};
 };
 #endif

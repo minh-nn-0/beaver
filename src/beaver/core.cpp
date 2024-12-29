@@ -124,10 +124,10 @@ void beaver::run_game(sdlgame& game, const std::function<bool(float)>& updatef, 
 
         	SDL_RenderPresent(game._graphics._rdr);
 			
-			game._fpstracker.end_frame();
-			
 			for (auto& [_,v]: game._ctl._keystate)
 				if (v > 0) v++;
+
+			game._fpstracker.end_frame();
 		};
 	};
 

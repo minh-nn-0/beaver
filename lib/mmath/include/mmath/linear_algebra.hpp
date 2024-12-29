@@ -72,7 +72,7 @@ namespace mmath
 		auto operator <=> (const vec2&) const = default;
 		
 		template<typename T>
-		operator vec2<T>()
+		operator vec2<T>() const
 		{
 			return vec2<T>
 			{

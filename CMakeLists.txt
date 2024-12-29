@@ -18,7 +18,11 @@ set(UTILITIES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/utilities)
 add_library(beaver
 	${BEAVER_SRC_DIR}/core.cpp
 	${BEAVER_SRC_DIR}/graphics.cpp
-	${BEAVER_SRC_DIR}/scripting.cpp
+	${BEAVER_SRC_DIR}/text.cpp
+	${BEAVER_SRC_DIR}/scripting/scripting_core.cpp
+	${BEAVER_SRC_DIR}/scripting/scripting_tile.cpp
+	${BEAVER_SRC_DIR}/scripting/scripting_camera.cpp
+	${BEAVER_SRC_DIR}/tile.cpp
 	${BEAVER_SRC_DIR}/ecs/systems/particle.cpp
 )
 target_include_directories(beaver PUBLIC 
