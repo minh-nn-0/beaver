@@ -331,7 +331,7 @@ void beaver::graphics::tilemap(const beaver::tile::tilemap& tm,
 			for (const auto& parent: extract_groups(tm.get_layer_name(i)))
 			{
 				const layer_t& parent_layer = tm.get_layer(parent);
-				assert(std::holds_alternative<std::monostate>(parent_layer._data));
+				assert(std::holds_alternative<group>(parent_layer._data));
 				parent_drawdata = parent_drawdata + parent_layer._drawdata;
 				parent_visible &= parent_layer._visible;
 			};

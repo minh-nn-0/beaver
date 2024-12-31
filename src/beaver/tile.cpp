@@ -28,7 +28,7 @@ drawdata ddata_from_json(const nlohmann::json& j)
 	return rs;
 };
 
-void loadlayer(const nlohmann::json& tmj, const std::string& parent_name, tilemap::layer_manager& layers)
+std::string loadlayer(const nlohmann::json& tmj, const std::string& parent_name, tilemap::layer_manager& layers)
 {
 	layer_t rs;
 	rs._drawdata = ddata_from_json(tmj);
@@ -49,13 +49,16 @@ void loadlayer(const nlohmann::json& tmj, const std::string& parent_name, tilema
 	}
 	else if (ltype == "group")
 	{
+		group gr;
 		for (auto& gr_layer: tmj.at("layers")) 
 			if (gr_layer.at("type") == "tilelayer" || gr_layer.at("type") == "group")
-				loadlayer(gr_layer, lname, layers);
-		rs._data = std::monostate{};
+				gr._layers.push_back(loadlayer(gr_layer, lname, layers));
+		rs._data = gr;
 		layers.second.emplace_back(rs);
 		layers.first.emplace(lname, layers.second.size() - 1);
 	};
+
+	return lname;
 };
 
 auto print_drawdata = [](auto&& arg)
@@ -97,12 +100,16 @@ void printlayers(const tilemap::layer_manager& layers) {
                       << '\n';
         }
 
-        if (std::holds_alternative<std::monostate>(layer._data)) {
+        if (std::holds_alternative<group>(layer._data)) {
             std::cout << std::string(level, '\t') 
                       << lname << '\t' 
                       << "type = group\t" 
                       << print_drawdata(layer) 
                       << '\n';
+			std::println("gr layer");
+			for (auto& l: std::get<group>(layer._data)._layers)
+				std::print("{} ", l);
+			std::println();
         }
     }
 }

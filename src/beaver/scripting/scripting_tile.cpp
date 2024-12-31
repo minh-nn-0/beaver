@@ -70,6 +70,15 @@ void beaver::scripting::bind_tile(sdlgame& game, map_container& maps, sol::table
 				maps.at(map_name).get_layer(layer_name)._visible = visible;
 			});
 
+	// GROUPLAYER FUNCTIONS
+	
+	tbl.set_function("get_group_layers", [&](const std::string& map_name, const std::string& layer_name) -> std::vector<std::string>
+			{
+				if (auto* gr = std::get_if<tile::group>(&maps.at(map_name).get_layer(layer_name)._data))
+					return gr->_layers;
+				else throw std::runtime_error(std::format("map {} layer {} is not a group layer", map_name, layer_name));
+			});
+
 	// TILELAYER FUNCTIONS
 	tbl.set_function("get_flipflags", [&](long id) {return tiled::get_flipflags(id);});
 	tbl.set_function("get_tile", [&](const std::string& map_name, const std::string& layer_name, 

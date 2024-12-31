@@ -50,7 +50,10 @@ namespace beaver::tile
 	};
 
 	// Placeholder for grouplayer
-	struct group {};
+	struct group 
+	{
+		std::vector<std::string> _layers;
+	};
 
 	struct tileset
 	{
@@ -61,7 +64,7 @@ namespace beaver::tile
 	struct layer_t
 	{
 		// monostate represent a group (House.Bathroom)
-		std::variant<std::monostate, tilelayer> _data;
+		std::variant<group, tilelayer> _data;
 		drawdata _drawdata;
 		bool _visible;
 	};
@@ -79,7 +82,10 @@ namespace beaver::tile
 		utils::color _bgcolor;
 		int _tilesize, _numx, _numy;
 
-		const layer_t& get_layer(const std::string& lname) const {return _layers.second.at(_layers.first.at(lname));};
+		const layer_t& get_layer(const std::string& lname) const 
+		{
+			return _layers.second.at(_layers.first.at(lname));
+		};
 		layer_t& get_layer(const std::string& lname) {return _layers.second.at(_layers.first.at(lname));};
 		std::string get_layer_name(std::size_t lid) const
 		{
