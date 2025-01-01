@@ -28,13 +28,19 @@ namespace beaver
 		beaver::FPS_tracker 				_fpstracker;
 		beaver::controller 					_ctl;
 
-		mmath::ivec2 render_size()
+		mmath::ivec2 render_logical_size()
 		{
 			mmath::ivec2 rs;
 			SDL_RenderGetLogicalSize(_graphics._rdr, &rs.x, &rs.y);
 			return rs;
 		};
 
+		mmath::ivec2 render_output_size()
+		{
+			mmath::ivec2 rs;
+			SDL_GetRendererOutputSize(_graphics._rdr, &rs.x, &rs.y);
+			return rs;
+		};
 		mmath::ivec2 window_size()
 		{
 			mmath::ivec2 rs;
