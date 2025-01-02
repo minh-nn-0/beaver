@@ -13,7 +13,7 @@ namespace beaver::component
 		struct frame
 		{
 			int _id;
-			int _duration;
+			float _duration;
 		};
 		using framevec = std::vector<frame>;
 

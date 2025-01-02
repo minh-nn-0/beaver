@@ -64,14 +64,6 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 	lua["FLIP_H"] = SDL_FLIP_HORIZONTAL;
 	lua["FLIP_V"] = SDL_FLIP_VERTICAL;
 	lua.set_function("CLS", [&]{ SDL_RenderClear(game._graphics._rdr);});
-	lua.set_function("SET_TEXTURE_BLEND_MODE", [&](const std::string& texturename, const std::string& blendmode)
-			{
-				sdl::texture* tex = game._assets.get<sdl::texture>(texturename);
-				if (blendmode == "additive") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_ADD);
-				if (blendmode == "modulate") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_MOD);
-				if (blendmode == "multiply") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_MUL);
-				if (blendmode == "blend") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_BLEND);
-			});
 	lua.set_function("CLS", [&]{ SDL_RenderClear(game._graphics._rdr);});
 	lua.set_function("SET_DRAW_COLOR", 
 			[&](unsigned char r, unsigned char g, unsigned char b, unsigned char a)
@@ -100,6 +92,14 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				game._assets.add<sdl::texture>(name, sdl::texture{SDL_CreateTexture(game._graphics._rdr, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height)});
 			});
 
+	lua.set_function("SET_TEXTURE_BLEND_MODE", [&](const std::string& texturename, const std::string& blendmode)
+			{
+				sdl::texture* tex = game._assets.get<sdl::texture>(texturename);
+				if (blendmode == "additive") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_ADD);
+				if (blendmode == "modulate") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_MOD);
+				if (blendmode == "multiply") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_MUL);
+				if (blendmode == "blend") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_BLEND);
+			});
 	lua.set_function("SET_RENDER_TARGET", [&](const std::string& name)
 			{
 				if (name.empty()) SDL_SetRenderTarget(game._graphics._rdr, nullptr);
