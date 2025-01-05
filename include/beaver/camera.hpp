@@ -13,15 +13,19 @@ namespace beaver
 		float			  	_rotation;
 		float			  	_smooth_speed = 8;
 
-		mmath::fvec2		_target;
-		void update(float dt)
+		void target(const mmath::fvec2& target, float dt)
 		{
 			// TODO _zoom factor is troublesome
-			mmath::fvec2 destination = (_target - _view._size / 2.f / _zoom + _offset) - _view._pos; 
+			mmath::fvec2 destination = (target - _view._size / 2.f / _zoom + _offset) - _view._pos; 
 			//TODO translate cam pos to destination
 			
 			//DOne that day <---- actually not
 			_view._pos += destination * _smooth_speed * dt;
+		};
+
+		mmath::fvec2 center()
+		{
+			return _view._size / 2.f / _zoom + _offset;
 		};
 	};
 };

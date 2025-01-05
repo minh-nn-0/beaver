@@ -3,13 +3,13 @@
 
 void beaver::scripting::bind_camera(camera2D& cam, sol::table& tbl)
 {
+	tbl.set_function("set_cam_center", [&](float x, float y)
+			{
+				cam._view._pos = mmath::fvec2{x, y} - cam.center();
+			});
 	tbl.set_function("set_cam_position", [&](float x, float y)
 			{
 				cam._view._pos = {x, y};
-			});
-	tbl.set_function("set_cam_target", [&](float x, float y)
-			{
-				cam._target = {x, y};
 			});
 	tbl.set_function("get_cam_view", [&]() -> std::tuple<float,float,float,float>
 			{

@@ -1,7 +1,7 @@
 #include <beaver/scripting/scripting_core.hpp>
 void beaver::scripting::init_lua(sol::state& lua)
 {
-	lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::package, sol::lib::math, sol::lib::debug, sol::lib::string);
+	lua.open_libraries(sol::lib::base, sol::lib::table, sol::lib::package, sol::lib::math, sol::lib::debug, sol::lib::string, sol::lib::io);
 	lua.script((std::string("package.path = package.path .. \";") + std::string(ENGINE_PATH) + "/utilities/luamodules/?.lua\"").c_str());
 };
 void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
