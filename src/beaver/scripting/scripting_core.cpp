@@ -71,7 +71,10 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 
 	lua.set_function("SET_SCALE", [&](int x, int y)
 			{SDL_RenderSetScale(game._graphics._rdr, x, y);});
-
+	lua.set_function("SET_INTEGER_SCALE", [&](bool active)
+			{
+				SDL_RenderSetIntegerScale(game._graphics._rdr, active ? SDL_TRUE : SDL_FALSE);
+			});
 	lua.set_function("SET_RENDER_LOGICAL_SIZE", [&](int x, int y)
 			{SDL_RenderSetLogicalSize(game._graphics._rdr, x, y);});
 
@@ -91,7 +94,24 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				game._assets.add<sdl::texture>(name, sdl::texture{SDL_CreateTexture(game._graphics._rdr, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height)});
 			});
-
+	lua.set_function("SET_VIEWPORT", [&](int x, int y, int w, int h)
+			{
+				SDL_Rect vp = {x,y,w,h};
+				SDL_RenderSetViewport(game._graphics._rdr, &vp);
+			});
+	lua.set_function("RESET_VIEWPORT", [&]
+			{
+				SDL_RenderSetViewport(game._graphics._rdr, nullptr);
+			});
+	lua.set_function("SET_CLIP_RECT", [&](int x, int y, int w, int h)
+			{
+				SDL_Rect clip = {x,y,w,h};
+				SDL_RenderSetClipRect(game._graphics._rdr, &clip);
+			});
+	lua.set_function("RESET_CLIP_RECT", [&]
+			{
+				SDL_RenderSetClipRect(game._graphics._rdr, nullptr);
+			});
 	lua.set_function("SET_TEXTURE_BLEND_MODE", [&](const std::string& texturename, const std::string& blendmode)
 			{
 				sdl::texture* tex = game._assets.get<sdl::texture>(texturename);
@@ -163,31 +183,39 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			});
 	
 
+	lua.set_function("SET_FONT_SIZE", [&](const std::string& fontname, int size)
+			{
+				sdl::font* font = game._assets.get<sdl::font>(fontname);
+				TTF_SetFontSize(*font, size);
+			});
 	// Draw using topleft
-	lua.set_function("DRAW_TEXT", [&](float x, float y, const std::string& fontname, const std::string& content, int wraplength, bool blended)
+	lua.set_function("DRAW_TEXT", [&](float x, float y, const std::string& fontname, float scale,
+				const std::string& content, int wraplength, bool blended)
 			{
 				sdl::font* font = game._assets.get<sdl::font>(fontname);
 				if (blended) 
-					game._graphics.text_blended({x,y}, *font, content, wraplength);
+					game._graphics.text_blended({x,y}, *font, content, scale, wraplength);
 				else 
-					game._graphics.text_solid({x,y}, *font, content, wraplength);
+					game._graphics.text_solid({x,y}, *font, content, scale, wraplength);
 			});
 	// draw using center
-	lua.set_function("DRAW_TEXT_CENTERED", [&](float x, float y, const std::string& fontname, const std::string& content, int wraplength, bool blended)
+	lua.set_function("DRAW_TEXT_CENTERED", [&](float x, float y, const std::string& fontname, float scale,
+				const std::string& content, int wraplength, bool blended)
 			{
 				sdl::font* font = game._assets.get<sdl::font>(fontname);
 				if (blended) 
-					game._graphics.text_blended({x,y}, *font, content, wraplength, graphics::TEXT_ALIGNMENT::CENTER);
+					game._graphics.text_blended({x,y}, *font, content, scale, wraplength, graphics::TEXT_ALIGNMENT::CENTER);
 				else 
-					game._graphics.text_solid({x,y}, *font, content, wraplength, graphics::TEXT_ALIGNMENT::CENTER);
+					game._graphics.text_solid({x,y}, *font, content, scale, wraplength, graphics::TEXT_ALIGNMENT::CENTER);
 			});
-	lua.set_function("DRAW_TEXT_RIGHT", [&](float x, float y, const std::string& fontname, const std::string& content, int wraplength, bool blended)
+	lua.set_function("DRAW_TEXT_RIGHT", [&](float x, float y, const std::string& fontname, float scale,
+				const std::string& content, int wraplength, bool blended)
 			{
 				sdl::font* font = game._assets.get<sdl::font>(fontname);
 				if (blended) 
-					game._graphics.text_blended({x,y}, *font, content, wraplength, graphics::TEXT_ALIGNMENT::RIGHT);
+					game._graphics.text_blended({x,y}, *font, content, scale, wraplength, graphics::TEXT_ALIGNMENT::RIGHT);
 				else 
-					game._graphics.text_solid({x,y}, *font, content, wraplength, graphics::TEXT_ALIGNMENT::RIGHT);
+					game._graphics.text_solid({x,y}, *font, content, scale, wraplength, graphics::TEXT_ALIGNMENT::RIGHT);
 			});
 	lua.set_function("IMAGE_SIZE", [&](const std::string& name) -> sol::table
 			{

@@ -166,27 +166,30 @@ void beaver::graphics::texture(const sdl::texture& tex,
 void beaver::graphics::text_solid(const mmath::fvec2& pos,
 				const sdl::font& font,
 				const std::string& content,
+				float scale,
 				int wraplength,
 				TEXT_ALIGNMENT alignment)
 {
-	text(pos, make_text_solid(_rdr, font, content, _draw_color, wraplength), alignment);
+	text(pos, make_text_solid(_rdr, font, content, _draw_color, wraplength), scale, alignment);
 };
 void beaver::graphics::text_blended(const mmath::fvec2& pos,
 				const sdl::font& font,
 				const std::string& content,
+				float scale,
 				int wraplength,
 				TEXT_ALIGNMENT alignment)
 {
-	text(pos, make_text_blended(_rdr, font, content, _draw_color, wraplength), alignment);
+	text(pos, make_text_blended(_rdr, font, content, _draw_color, wraplength), scale, alignment);
 };
 
 void beaver::graphics::text(const mmath::fvec2& pos,
 		const sdl::texture& text,
+		float scale,
 		TEXT_ALIGNMENT alignment)
 {
 	mmath::frect dst = {pos.x, pos.y, 
-						static_cast<float>(text._width),
-						static_cast<float>(text._height)};
+						static_cast<float>(text._width) * scale,
+						static_cast<float>(text._height) * scale};
 
 	switch (alignment)
 	{
@@ -196,6 +199,7 @@ void beaver::graphics::text(const mmath::fvec2& pos,
 	};
 	texture(text, dst);
 };
+
 void draw_layers(const tiled::layer& layer,
 		tiled::drawdata	parent_drawdata,
 		beaver::graphics& graphic, 

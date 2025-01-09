@@ -69,17 +69,20 @@ namespace beaver
 		void text_solid(const mmath::fvec2&,
 				const sdl::font&, 
 				const std::string&, 
+				float scale,
 				int wraplength = 0,
 				TEXT_ALIGNMENT alignment = TEXT_ALIGNMENT::LEFT);
 		
 		void text_blended(const mmath::fvec2&,
 				const sdl::font&, 
 				const std::string&, 
+				float scale,
 				int wraplength = 0,
 				TEXT_ALIGNMENT alignment = TEXT_ALIGNMENT::LEFT);
 
 		void text(const mmath::fvec2&,
 				const sdl::texture& text,
+				float scale,
 				TEXT_ALIGNMENT alignment = TEXT_ALIGNMENT::LEFT);
 		void tilemap(const tiled::tilemap&, const mmath::fvec2&, const std::vector<sdl::texture*>&);
 		void tilemap(const beaver::tile::tilemap&, const mmath::fvec2&, const std::vector<sdl::texture*>&);

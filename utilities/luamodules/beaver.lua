@@ -76,14 +76,17 @@ function beaver.draw_texture(texture_name, param)
 	DRAW_TEXTURE(texture_name, param or {})
 end
 
-function beaver.draw_text(x, y, fontname, content, wraplength, blended)
-	DRAW_TEXT(x,y,fontname,content,wraplength or 0, blended or false)
+function beaver.set_font_size(fontname, size)
+	SET_FONT_SIZE(fontname, size)
 end
-function beaver.draw_text_centered(x, y, fontname, content, wraplength, blended)
-	DRAW_TEXT_CENTERED(x,y,fontname,content,wraplength or 0, blended or false)
+function beaver.draw_text(x, y, fontname, scale, content, wraplength, blended)
+	DRAW_TEXT(x,y,fontname, scale, content, wraplength or 0, blended or false)
 end
-function beaver.draw_text_right(x, y, fontname, content, wraplength, blended)
-	DRAW_TEXT_RIGHT(x,y,fontname,content,wraplength or 0, blended or false)
+function beaver.draw_text_centered(x, y, fontname, scale, content, wraplength, blended)
+	DRAW_TEXT_CENTERED(x,y,fontname, scale, content, wraplength or 0, blended or false)
+end
+function beaver.draw_text_right(x, y, fontname,scale, content, wraplength, blended)
+	DRAW_TEXT_RIGHT(x,y,fontname, scale, content, wraplength or 0, blended or false)
 end
 -- @param r integer
 -- @param g integer
@@ -106,6 +109,9 @@ function beaver.set_scale(x,y)
 	SET_SCALE(x,y)
 end
 
+function beaver.set_integer_scale(active)
+	SET_INTEGER_SCALE(active)
+end
 function beaver.set_render_logical_size(x,y)
 	SET_RENDER_LOGICAL_SIZE(x,y)
 end
@@ -125,6 +131,18 @@ end
 
 function beaver.set_render_target(target_name)
 	SET_RENDER_TARGET(target_name and target_name or "")
+end
+function beaver.set_viewport(x,y,w,h)
+	SET_VIEWPORT(x,y,w,h)
+end
+function beaver.set_clip_rect(x,y,w,h)
+	SET_CLIP_RECT(x,y,w,h)
+end
+function beaver.reset_viewport()
+	RESET_VIEWPORT()
+end
+function beaver.reset_clip_rect()
+	RESET_CLIP_RECT()
 end
 function beaver.set_fullscreen(fc)
 	SET_FULLSCREEN(fc)
