@@ -35,7 +35,7 @@ std::string loadlayer(const nlohmann::json& tmj, const std::string& parent_name,
 	rs._visible = tmj.at("visible");
 	
 	std::string lname = parent_name.empty() ? static_cast<std::string>(tmj.at("name"))
-											: parent_name + "." + static_cast<std::string>(tmj.at("name"));
+			: parent_name + "." + static_cast<std::string>(tmj.at("name"));
 	std::string ltype = tmj.at("type");
 	if (ltype == "tilelayer")
 	{
@@ -47,11 +47,23 @@ std::string loadlayer(const nlohmann::json& tmj, const std::string& parent_name,
 		layers.second.emplace_back(rs);
 		layers.first.emplace(lname, layers.second.size() - 1);
 	}
+	else if (ltype == "imagelayer")
+	{
+		image_layer il;
+		il._image_name = std::filesystem::path{tmj.at("image")}.filename();
+		il._position = {tmj.count("offsetx") > 0 ? static_cast<float>(tmj.at("offsetx")) : 0,
+						tmj.count("offsety") > 0 ? static_cast<float>(tmj.at("offsety")) : 0};
+
+		rs._data = il;
+		layers.second.emplace_back(rs);
+		layers.first.emplace(lname, layers.second.size() - 1);
+	}
 	else if (ltype == "group")
 	{
 		group gr;
 		for (auto& gr_layer: tmj.at("layers")) 
-			if (gr_layer.at("type") == "tilelayer" || gr_layer.at("type") == "group")
+			if (gr_layer.at("type") == "tilelayer" || gr_layer.at("type") == "imagelayer" ||
+					gr_layer.at("type") == "group")
 				gr._layers.push_back(loadlayer(gr_layer, lname, layers));
 		rs._data = gr;
 		layers.second.emplace_back(rs);
@@ -100,6 +112,14 @@ void printlayers(const tilemap::layer_manager& layers) {
                       << '\n';
         }
 
+        if (std::holds_alternative<image_layer>(layer._data)) {
+            std::cout << std::string(level, '\t') 
+                      << lname << '\t' 
+                      << "type = image\t" 
+                      << print_drawdata(layer) << '\t'
+					  << std::get<image_layer>(layer._data)._image_name
+                      << '\n';
+        }
         if (std::holds_alternative<group>(layer._data)) {
             std::cout << std::string(level, '\t') 
                       << lname << '\t' 
@@ -152,4 +172,27 @@ beaver::tile::tilemap::tilemap(const std::filesystem::path& path)
 		loadlayer(layer, "", _layers);
 
 	printlayers(_layers);
+};
+
+void beaver::tile::load_textures(tilemap& tm, std::vector<sdl::texture*>& textures)
+{
+	auto find_texture = [&](const std::string& texture_name) -> int
+	{
+		if (auto find_rs = std::ranges::find_if(textures, [&](auto&& tex)
+				{ return tex->_name == texture_name; });
+				find_rs != textures.end())
+			return std::distance(textures.begin(), find_rs);
+		else return -1;
+		
+	};
+	//tileset
+	for (auto& [_, ts]: tm._tilesets)
+		ts._textureid = find_texture(ts._filename);
+	//images
+	
+	for (auto& layer: tm._layers.second | std::views::filter([](auto& layer){ return std::holds_alternative<image_layer>(layer._data);}))
+	{
+		auto& il = std::get<image_layer>(layer._data);
+		il._textureid = find_texture(il._image_name);
+	};
 };

@@ -15,7 +15,8 @@ void beaver::scripting::bind_tile(sdlgame& game, map_container& maps, sol::table
 {
 	tbl.set_function("new_map", [&](const std::string& map_name, const std::string& map_path)
 			{
-				maps.emplace(map_name, tilemap{map_path});
+				auto newmap = maps.emplace(map_name, tilemap{map_path});
+				tile::load_textures(newmap.first->second, game._assets.get_vec<sdl::texture>());
 			});
 	tbl.set_function("get_map_size", [&](const std::string& map_name) -> std::pair<int, int>
 			{

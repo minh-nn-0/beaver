@@ -158,7 +158,18 @@ end
 function beaver.play_music(name, loop)
 	PLAY_MUSIC(name, loop or -1)
 end
-
+function beaver.pause_channel(channel)
+	PAUSE_CHANNEL(channel or -1)
+end
+function beaver.halt_channel(channel)
+	HALT_CHANNEL(channel or -1)
+end
+function beaver.fade_in_music(music, loops, ms)
+	FADE_IN_MUSIC(music, loops, ms)
+end
+function beaver.pause_music()
+	PAUSE_MUSIC()
+end
 function beaver.set_volume_master(volume)
 	SET_VOLUME_MASTER(volume)
 end

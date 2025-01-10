@@ -188,8 +188,8 @@ void beaver::graphics::text(const mmath::fvec2& pos,
 		TEXT_ALIGNMENT alignment)
 {
 	mmath::frect dst = {pos.x, pos.y, 
-						static_cast<float>(text._width) * scale,
-						static_cast<float>(text._height) * scale};
+						floor(text._width * scale),
+						floor(text._height * scale)};
 
 	switch (alignment)
 	{
@@ -266,15 +266,14 @@ void beaver::graphics::tilemap(const tiled::tilemap& tm,
 };
 
 using namespace beaver::tile;
-void draw_layers(const layer_t& layer,
+void draw_tilelayer(const tilelayer& tl,
 		const mmath::fvec2& pos,
-		drawdata parent_drawdata,
+		drawdata ddata,
 		beaver::graphics& graphic, 
 		const tilemap& tm,
 		const std::vector<sdl::texture*>& textures)
 {
-	const tilelayer& tl = std::get<tilelayer>(layer._data); 
-	auto [parallax, offset, tint] = layer._drawdata + parent_drawdata;
+	auto [parallax, offset, tint] = ddata;
 	for (int i = 0; i != tl._data.size(); i++)
 	{
 		if (long tile = tl._data.at(i); tile >= 0)
@@ -282,9 +281,13 @@ void draw_layers(const layer_t& layer,
 			auto [flipflag, tileid] = tiled::get_flipflags(tile);
 
 			const tileset& ts = tm.tileset_at(tileid); 
-			const sdl::texture* ts_tex = *(std::ranges::find_if(textures, 
-						[=](auto&& tex){return ts._filename == tex->_name;}));
+			if (ts._textureid == -1)
+			{
+				std::println("image {} not found", ts._filename);
+				return;
+			};
 			
+			sdl::texture* ts_tex = textures.at(ts._textureid);
 			SDL_SetTextureAlphaMod(*ts_tex, tint[3]);
 			SDL_SetTextureColorMod(*ts_tex, tint[0], tint[1], tint[2]);
 			
@@ -309,26 +312,50 @@ void draw_layers(const layer_t& layer,
 	};
 };
 
+void draw_imagelayer(const image_layer& il,
+		const mmath::fvec2& pos,
+		drawdata ddata,
+		beaver::graphics& graphic, 
+		const std::vector<sdl::texture*>& textures)
+{
+	if (il._textureid == -1)
+	{
+		std::println("image {} not found", il._image_name);
+		return;
+	}
+	sdl::texture* image = textures.at(il._textureid);
+	auto [parallax, offset, tint] = ddata;
+	SDL_SetTextureAlphaMod(*image, tint[3]);
+	SDL_SetTextureColorMod(*image, tint[0], tint[1], tint[2]);
+	mmath::frect dst = {pos, {static_cast<float>(image->_width), static_cast<float>(image->_height)}};
+
+	graphic.texture(*image, dst);
+	SDL_SetTextureAlphaMod(*image, 255);
+	SDL_SetTextureColorMod(*image, 255, 255, 255);
+
+};
+
+std::vector<std::string> extract_groups (const std::string& string)
+{
+	std::vector<std::string> rs;
+	for (std::size_t i = 0; i!= string.size(); i++)
+	{
+		if (string[i] == '.') 
+			rs.emplace_back(string.substr(0,i));
+	};
+
+	return rs;
+};
+
+
 void beaver::graphics::tilemap(const beaver::tile::tilemap& tm,
 		const mmath::fvec2& pos,
 		const std::vector<sdl::texture*>& textures)
 {
-	auto extract_groups = [](std::string&& string) -> std::vector<std::string>
-	{
-		std::vector<std::string> rs;
-		for (std::size_t i = 0; i!= string.size(); i++)
-		{
-			if (string[i] == '.') 
-				rs.emplace_back(string.substr(0,i));
-		};
-
-		return rs;
-	};
-
 	for (std::size_t i = 0; i != tm._layers.second.size(); i++)
 	{ 
 		const layer_t& layer = tm._layers.second[i];
-		if (layer._visible && std::holds_alternative<tilelayer>(layer._data))
+		if (layer._visible)
 		{
 			drawdata parent_drawdata;
 			bool parent_visible {true};
@@ -339,10 +366,49 @@ void beaver::graphics::tilemap(const beaver::tile::tilemap& tm,
 				parent_drawdata = parent_drawdata + parent_layer._drawdata;
 				parent_visible &= parent_layer._visible;
 			};
-			
 			if (parent_visible)
-				draw_layers(layer, pos, parent_drawdata, *this, tm, textures);
+			{
+				if (auto tl = std::get_if<tilelayer>(&layer._data))
+					draw_tilelayer(*tl, pos, layer._drawdata + parent_drawdata, *this, tm, textures);
+				else if (auto il = std::get_if<image_layer>(&layer._data))
+					draw_imagelayer(*il, il->_position + pos, layer._drawdata + parent_drawdata, *this, textures);
+			}
 		};
 	};
+};
+
+void beaver::graphics::tilemap_by_layer(const beaver::tile::tilemap& tm,
+		const std::string& layer_name,
+		const mmath::fvec2& pos,
+		const std::vector<sdl::texture*>& textures)
+{
+	if (!tm._layers.first.contains(layer_name))
+	{
+		std::println("layer {} not found", layer_name);
+		return;
+	}
+	const auto& layer = tm.get_layer(layer_name);
+	if (layer._visible)
+	{
+		drawdata parent_drawdata;
+		bool parent_visible {true};
+		for (const auto& parent: extract_groups(layer_name))
+		{
+			const layer_t& parent_layer = tm.get_layer(parent);
+			assert(std::holds_alternative<group>(parent_layer._data));
+			parent_drawdata = parent_drawdata + parent_layer._drawdata;
+			parent_visible &= parent_layer._visible;
+		};
+		if (parent_visible)
+		{
+			if (auto tl = std::get_if<tilelayer>(&layer._data))
+				draw_tilelayer(*tl, pos, layer._drawdata + parent_drawdata, *this, tm, textures);
+			else if (auto il = std::get_if<image_layer>(&layer._data))
+				draw_imagelayer(*il, il->_position + pos, layer._drawdata + parent_drawdata, *this, textures);
+			else if (auto gl = std::get_if<group>(&layer._data))
+				for (auto& layer: gl->_layers)
+					tilemap_by_layer(tm, layer, pos, textures);
+		}
+	}
 };
 

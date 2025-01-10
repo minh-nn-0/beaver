@@ -86,6 +86,7 @@ namespace beaver
 				TEXT_ALIGNMENT alignment = TEXT_ALIGNMENT::LEFT);
 		void tilemap(const tiled::tilemap&, const mmath::fvec2&, const std::vector<sdl::texture*>&);
 		void tilemap(const beaver::tile::tilemap&, const mmath::fvec2&, const std::vector<sdl::texture*>&);
+		void tilemap_by_layer(const beaver::tile::tilemap&, const std::string&, const mmath::fvec2&, const std::vector<sdl::texture*>&);
 	};
 };
 #endif

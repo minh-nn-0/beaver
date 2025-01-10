@@ -233,13 +233,29 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 
 				Mix_PlayChannel(channel, *sound, loop);
 			});
+	lua.set_function("PAUSE_CHANNEL", [&](int channel)
+			{
+				Mix_Pause(channel);
+			});
+	lua.set_function("HALT_CHANNEL", [&](int channel)
+			{
+				Mix_HaltChannel(channel);
+			});
+	lua.set_function("FADE_IN_MUSIC", [&](const std::string& name, int loop, int ms)
+			{
+				sdl::music* music = game._assets.get<sdl::music>(name);
+				Mix_FadeInMusic(*music, loop, ms);
+			});
 	lua.set_function("PLAY_MUSIC", [&](const std::string& name, int loop)
 			{
 				sdl::music* music = game._assets.get<sdl::music>(name);
-
 				Mix_PlayMusic(*music, loop);
 			});
 
+	lua.set_function("PAUSE_MUSIC", [&](const std::string& name, int loop)
+			{
+				Mix_PauseMusic();
+			});
 	lua.set_function("SET_VOLUME_MASTER", [&](int volume)
 			{
 				Mix_MasterVolume(volume);

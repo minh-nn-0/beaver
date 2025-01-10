@@ -7,7 +7,7 @@
 #include <utilities.hpp>
 #include <headeronly/json.hpp>
 #include <headeronly/sol/sol.hpp>
-#include <tiledwrapper/tiledwrapper.hpp>
+#include <sdlwrapper/sdlwrapper.hpp>
 namespace beaver::tile
 {
 	constexpr int get_tile_number(int tilex, int tiley, int mapwidth, int mapheight)
@@ -49,7 +49,12 @@ namespace beaver::tile
 		std::vector<long> _data;
 	};
 
-	// Placeholder for grouplayer
+	struct image_layer
+	{
+		std::string _image_name;
+		int _textureid {-1};
+		mmath::fvec2 _position;
+	};
 	struct group 
 	{
 		std::vector<std::string> _layers;
@@ -58,13 +63,13 @@ namespace beaver::tile
 	struct tileset
 	{
 		std::string _filename;
-		int _tilesize, _numx, _numy;
+		int _tilesize, _numx, _numy, _textureid{-1};
 	};
 
 	struct layer_t
 	{
 		// monostate represent a group (House.Bathroom)
-		std::variant<group, tilelayer> _data;
+		std::variant<group, tilelayer, image_layer> _data;
 		drawdata _drawdata;
 		bool _visible;
 	};
@@ -97,6 +102,9 @@ namespace beaver::tile
 			return std::ranges::find_if(_tilesets | std::views::reverse , [&](auto&& ts){return ts.first <= id;})->second;
 		};
 	};
+	
+
+	void load_textures(tilemap&, std::vector<sdl::texture*>& textures);
 };
 
 /*
