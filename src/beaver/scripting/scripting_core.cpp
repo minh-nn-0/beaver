@@ -251,7 +251,10 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				sdl::music* music = game._assets.get<sdl::music>(name);
 				Mix_PlayMusic(*music, loop);
 			});
-
+	lua.set_function("SET_VSYNC", [&](bool on)
+			{
+				SDL_RenderSetVSync(game._graphics._rdr, on ? 1 : 0);
+			});
 	lua.set_function("PAUSE_MUSIC", [&](const std::string& name, int loop)
 			{
 				Mix_PauseMusic();

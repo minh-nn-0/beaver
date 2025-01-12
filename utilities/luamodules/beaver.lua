@@ -96,6 +96,9 @@ function beaver.set_draw_color(r,g,b,a)
 	SET_DRAW_COLOR(r,g,b,a)
 end
 
+function beaver.set_vsync(on)
+	SET_VSYNC(on)
+end
 function beaver.clear()
 	CLS()
 end
