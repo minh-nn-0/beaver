@@ -323,7 +323,7 @@ namespace beaver::scripting
 	template<typename... Ts>
 	void bind_tile_animation(beaver::ecs<Ts...>& ecs, sol::table& tbl, sol::state& lua)
 	{
-		tbl.set_function("get_animation", [&](std::size_t eid) -> sol::table
+		tbl.set_function("get_tileanimation", [&](std::size_t eid) -> sol::table
 			{
 				if (auto& anim = ecs. template get_component<tile_animation>(eid); anim.has_value())
 					return lua.create_table_with("currentid", anim->current_frame()._id,

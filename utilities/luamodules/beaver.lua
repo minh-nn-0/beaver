@@ -106,6 +106,12 @@ end
 function beaver.set_texture_blend_mode(texture_name, blend_mode)
 	SET_TEXTURE_BLEND_MODE(texture_name, blend_mode)
 end
+function beaver.set_render_blend_mode(blend_mode)
+	SET_RENDER_BLEND_MODE(blend_mode)
+end
+function beaver.set_texture_color_mod(texturename,color)
+	SET_TEXTURE_COLOR_MOD(texturename, color)
+end
 --- @param x integer
 --- @param y integer
 function beaver.set_scale(x,y)
@@ -156,7 +162,7 @@ function beaver.get_image_size(name)
 end
 
 function beaver.play_sound(name, channel, loop)
-	PLAY_SOUND(name, channel or -1, loop or 0)
+	return PLAY_SOUND(name, channel or -1, loop or 0)
 end
 function beaver.play_music(name, loop)
 	PLAY_MUSIC(name, loop or -1)
@@ -184,5 +190,8 @@ function beaver.set_volume_sound(name, volume)
 end
 function beaver.set_volume_channel(channel, volume)
 	SET_VOLUME_CHANNEL(channel, volume)
+end
+function beaver.allocate_sound_channels(number)
+	ALLOCATE_CHANNELS(number)
 end
 return beaver

@@ -3,7 +3,6 @@
 
 
 #include <beaver/sdlgame.hpp>
-#include <beaver/enum_bitops.hpp>
 #include <utilities.hpp>
 //Scripting with Lua and Sol
 // wrappers

@@ -1,5 +1,5 @@
 #pragma once
-#include <beaver/ecs/entity.hpp>
+#include <beaver/ecs/core.hpp>
 #include <sol/sol.hpp>
 namespace beaver::scripting
 {

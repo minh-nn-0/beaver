@@ -120,6 +120,19 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				if (blendmode == "multiply") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_MUL);
 				if (blendmode == "blend") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_BLEND);
 			});
+	lua.set_function("SET_TEXTURE_COLOR_MOD", [&](const std::string& texturename, const sol::table& color)
+			{
+				sdl::texture* tex = game._assets.get<sdl::texture>(texturename);
+				SDL_SetTextureColorMod(*tex, color[1], color[2], color[3]);
+				SDL_SetTextureAlphaMod(*tex, color[4]);
+			});
+	lua.set_function("SET_RENDER_BLEND_MODE", [&](const std::string& blendmode)
+			{
+				if (blendmode == "additive") SDL_SetRenderDrawBlendMode(game._graphics._rdr, SDL_BLENDMODE_ADD);
+				if (blendmode == "modulate") SDL_SetRenderDrawBlendMode(game._graphics._rdr, SDL_BLENDMODE_MOD);
+				if (blendmode == "multiply") SDL_SetRenderDrawBlendMode(game._graphics._rdr, SDL_BLENDMODE_MUL);
+				if (blendmode == "blend") SDL_SetRenderDrawBlendMode(game._graphics._rdr, SDL_BLENDMODE_BLEND);
+			});
 	lua.set_function("SET_RENDER_TARGET", [&](const std::string& name)
 			{
 				if (name.empty()) SDL_SetRenderTarget(game._graphics._rdr, nullptr);
@@ -231,7 +244,7 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				sdl::soundchunk* sound = game._assets.get<sdl::soundchunk>(name);
 
-				Mix_PlayChannel(channel, *sound, loop);
+				return Mix_PlayChannel(channel, *sound, loop);
 			});
 	lua.set_function("PAUSE_CHANNEL", [&](int channel)
 			{
@@ -240,6 +253,10 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 	lua.set_function("HALT_CHANNEL", [&](int channel)
 			{
 				Mix_HaltChannel(channel);
+			});
+	lua.set_function("ALLOCATE_CHANNELS", [&](int number)
+			{
+				Mix_AllocateChannels(number);
 			});
 	lua.set_function("FADE_IN_MUSIC", [&](const std::string& name, int loop, int ms)
 			{
