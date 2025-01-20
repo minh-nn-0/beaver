@@ -35,6 +35,7 @@ add_subdirectory(lib)
 
 target_link_libraries(beaver PUBLIC sdlwrapper imgui_sdl mmath tiledwrapper lua)
 if (WIN32)
+	target_compile_options(beaver PUBLIC -m64 -Wa,-mbig-obj)
 	target_link_libraries(beaver PUBLIC "-lstdc++exp")
 endif()
 #set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra") #Stimulate release mode, does work
