@@ -8,8 +8,11 @@ beaver::graphics::graphics(SDL_Window* wd, SDL_Renderer* rdr, camera2D* cam)
 void beaver::graphics::point(const mmath::fvec2& p)
 {
 	mmath::fvec2 draw_point {p};
-	if (_cam != nullptr && _using_cam) draw_point = position_with_cam(draw_point, *_cam);
-	SDL_RenderDrawPointF(_rdr, draw_point.x, draw_point.y);
+	if (_cam != nullptr && _using_cam)
+	{
+		rect(draw_point.x, draw_point.y, 1, 1, true);
+	}
+	else SDL_RenderDrawPointF(_rdr, draw_point.x, draw_point.y);
 };
 
 void beaver::graphics::point(float x, float y)
@@ -61,69 +64,86 @@ void beaver::graphics::circle(const mmath::circle& circle, bool filled)
 {
 // Code stolen from https://gist.github.com/Gumichan01/332c26f6197a432db91cc4327fcabb1c, with a little modifying
  //   CHECK_RENDERER_MAGIC(renderer, -1);
-
-	mmath::fvec2 center = circle._center;
-	float radius = circle._radius;
-
-	if (_cam != nullptr && _using_cam)
-	{
-		center = position_with_cam(center, *_cam);
-		radius *= _cam->_zoom;
-	};
-	int offsetx = 0;
-    int offsety = radius;
-    int d = radius - 1;
-
-	float x = center.x, y = center.y;
-	if (filled)
-	{
-		while (offsety >= offsetx) 
-		{
-			line({x - offsety, y + offsetx}, {x + offsety, y + offsetx});
-			line({x - offsetx, y + offsety}, {x + offsetx, y + offsety});
-			line({x - offsetx, y - offsety}, {x + offsetx, y - offsety});
-			line({x - offsety, y - offsetx}, {x + offsety, y - offsetx});
-
-			if (d >= 2*offsetx) {
-				d -= 2*offsetx + 1;
-				offsetx +=1;
-			}
-			else if (d < 2 * (radius - offsety)) {
-				d += 2 * offsety - 1;
-				offsety -= 1;
-			}
-			else {
-				d += 2 * (offsety - offsetx - 1);
-				offsety -= 1;
-				offsetx += 1;
-			}
-		}
-	}
+	
+	if (circle._radius <= 1) point(circle._center.x, circle._center.y);
 	else
 	{
-		while (offsety >= offsetx)
-		{
-			point({x + offsetx, y + offsety});
-			point({x + offsety, y + offsetx});
-			point({x - offsetx, y + offsety});
-			point({x - offsety, y + offsetx});
-			point({x + offsetx, y - offsety});
-			point({x + offsety, y - offsetx});
-			point({x - offsetx, y - offsety});
-			point({x - offsety, y - offsetx});
+		mmath::fvec2 center = circle._center;
+		float radius = circle._radius;
 
-			if (d >= 2*offsetx) {
-				d -= 2*offsetx + 1;
-				offsetx +=1;
+		if (_cam != nullptr && _using_cam)
+		{
+			//center = position_with_cam(center, *_cam);
+			//radius *= _cam->_zoom;
+		};
+		int offsetx = 0;
+		int offsety = radius;
+		int d = radius - 1;
+
+		float x = center.x, y = center.y;
+		if (filled)
+		{
+			while (offsety >= offsetx) 
+			{
+				for (int dx = x - offsetx; dx <= x + offsetx; dx++) {
+					point(dx, y + offsety); // Top half
+					point(dx, y - offsety); // Bottom half
+				}
+				for (int dx = x - offsety; dx <= x + offsety; dx++) {
+					point(dx, y + offsetx); // Right side
+					point(dx, y - offsetx); // Left side
+				}
+				//for (int dx = -y; dx <= y; dx++) {
+				//    // Vertical line at x = offsety
+				//    rect(center.x + dx, center.y + x, 1, 1, true);
+				//    rect(center.x + dx, center.y - x, 1, 1, true);
+				//}
+				//line({x - offsety, y + offsetx}, {x + offsety, y + offsetx});
+				//line({x - offsetx, y + offsety}, {x + offsetx, y + offsety});
+				//line({x - offsetx, y - offsety}, {x + offsetx, y - offsety});
+				//line({x - offsety, y - offsetx}, {x + offsety, y - offsetx});
+
+				if (d >= 2*offsetx) {
+					d -= 2*offsetx + 1;
+					offsetx +=1;
+				}
+				else if (d < 2 * (radius - offsety)) {
+					d += 2 * offsety - 1;
+					offsety -= 1;
+				}
+				else {
+					d += 2 * (offsety - offsetx - 1);
+					offsety -= 1;
+					offsetx += 1;
+				}
 			}
-			else if (d < 2 * (radius - offsety)) {
-				d += 2 * offsety - 1;
-				offsety -= 1;
-			}
-			else {
-				d += 2 * (offsety - offsetx - 1);
-				offsety -= 1;
-				offsetx += 1;
+		}
+		else
+		{
+			while (offsety >= offsetx)
+			{
+				point({x + offsetx, y + offsety});
+				point({x + offsety, y + offsetx});
+				point({x - offsetx, y + offsety});
+				point({x - offsety, y + offsetx});
+				point({x + offsetx, y - offsety});
+				point({x + offsety, y - offsetx});
+				point({x - offsetx, y - offsety});
+				point({x - offsety, y - offsetx});
+
+				if (d >= 2*offsetx) {
+					d -= 2*offsetx + 1;
+					offsetx +=1;
+				}
+				else if (d < 2 * (radius - offsety)) {
+					d += 2 * offsety - 1;
+					offsety -= 1;
+				}
+				else {
+					d += 2 * (offsety - offsetx - 1);
+					offsety -= 1;
+					offsetx += 1;
+				}
 			}
 		}
 	}
