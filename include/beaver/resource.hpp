@@ -47,13 +47,17 @@ namespace beaver
 			template<typename RsrcT>
 			RsrcT* get(const std::string& name) 
 			{
-				return get_map<RsrcT>().at(name).get();
+				if (get_map<RsrcT>().contains(name))
+					return get_map<RsrcT>().at(name).get();
+				else throw std::invalid_argument(std::format("resource {} not found", name));
 			};
 
 			template<typename RsrcT>
 			const RsrcT* get(const std::string& name) const
 			{
-				return get_cmap<RsrcT>().at(name).get();
+				if (get_cmap<RsrcT>().contains(name))
+					return get_cmap<RsrcT>().at(name).get();
+				else throw std::invalid_argument(std::format("resource {} not found", name));
 			};
 
 			template<typename RsrcT>
