@@ -50,7 +50,7 @@ std::string loadlayer(const nlohmann::json& tmj, const std::string& parent_name,
 	else if (ltype == "imagelayer")
 	{
 		image_layer il;
-		il._image_name = std::filesystem::path{tmj.at("image")}.filename();
+		il._image_name = std::filesystem::path{tmj.at("image")}.filename().string();
 		il._position = {tmj.count("offsetx") > 0 ? static_cast<float>(tmj.at("offsetx")) : 0,
 						tmj.count("offsety") > 0 ? static_cast<float>(tmj.at("offsety")) : 0};
 
