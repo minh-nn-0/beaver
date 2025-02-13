@@ -98,52 +98,18 @@ namespace beaver
 			};
 		};
 
-
-		// actual data is stored in a vector. A map is used to map a name with the index
 		template<typename... RsrcTs>
 		struct manager_v2
 		{
-			using map_t = std::unordered_map<std::string, std::size_t>;
-
-			template<typename T>
-			using vec_t = std::vector<T>;
-
-			template<typename T>
-			using storage_t = std::pair<std::unordered_map<std::string, std::size_t>,
-				  						std::vector<T>>;
+			template<typename... Ts>
+			using storage_t = std::tuple<std::vector<Ts>...>;
 			
-			std::tuple<storage_t<RsrcTs>...> _storage;
-
+			storage_t<RsrcTs...> _storage;
 			template<typename RsrcT>
-			void add(const std::string& name, RsrcT&& arg = {})
-			{
-				get_vec<RsrcT>().emplace_back(std::forward<RsrcT>(arg));
-			};
-			template<typename RsrcT>
-			RsrcT& get(const std::string& name) 
-			{
-				return get_vec<RsrcT>().at(get_map<RsrcT>().at(name));
-			};
-
-			template<typename RsrcT>
-			const RsrcT& get(const std::string& name) const
-			{
-				return get_cvec<RsrcT>().at(get_cmap<RsrcT>().at(name));
-			};
-
-			template<typename RsrcT>
-			map_t& get_map() {return std::get<storage_t<RsrcT>>(_storage).first;};
+			std::vector<RsrcT>& get_vec() {return std::get<std::vector<RsrcT>>(_storage);};
 			
 			template<typename RsrcT>
-			const map_t& get_cmap() const {return std::get<storage_t<RsrcT>>(_storage).first;};
-			
-			template<typename RsrcT>
-			vec_t<RsrcT>& get_vec() {return std::get<storage_t<RsrcT>>(_storage).second;};
-			
-			template<typename RsrcT>
-			const vec_t<RsrcT>& get_cvec() const {return std::get<storage_t<RsrcT>>(_storage).second;};
-			
-
+			const std::vector<RsrcT>& get_cvec() const {return std::get<std::vector<RsrcT>>(_storage);};
 		};
 	};
 };

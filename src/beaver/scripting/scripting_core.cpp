@@ -7,57 +7,34 @@ void beaver::scripting::init_lua(sol::state& lua)
 void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 {
 	// ASSETS
-	lua.set_function("NEW_IMAGE", [&](const std::string& path, const std::string& custom_name)
+	lua.set_function("NEW_IMAGE", [&](const std::string& path)
 			{
-				std::string name = custom_name.empty() ? 
-								std::filesystem::path(path).filename().string()
-								: custom_name;
-				game._assets.add<sdl::texture>(
-						name,
-						sdl::texture{path.c_str(), game._graphics._rdr});
+				return &game._assets.get_vec<sdl::texture>().emplace_back(path.c_str(), game._graphics._rdr);
 			});
 	
-	lua.set_function("NEW_MUSIC", [&](const std::string& path, const std::string& custom_name)
+	lua.set_function("NEW_MUSIC", [&](const std::string& path)
 			{
-				std::string name = custom_name.empty() ? 
-								std::filesystem::path(path).filename().string()
-								: custom_name;
-				game._assets.add<sdl::music>(
-						name,
-						sdl::music{path.c_str()});
+				return &game._assets.get_vec<sdl::music>().emplace_back(path.c_str());
 			});
-	lua.set_function("NEW_SOUND", [&](const std::string& path, const std::string& custom_name)
+	lua.set_function("NEW_SOUND", [&](const std::string& path)
 			{
-				std::string name = custom_name.empty() ? 
-								std::filesystem::path(path).filename().string()
-								: custom_name;
-				game._assets.add<sdl::soundchunk>(
-						name,
-						sdl::soundchunk{path.c_str()});
+				return &game._assets.get_vec<sdl::soundchunk>().emplace_back(path.c_str());
 			});
-	lua.set_function("NEW_FONT", [&](const std::string& path, int fontsize, const std::string& custom_name)
+	lua.set_function("NEW_FONT", [&](const std::string& path, int fontsize)
 			{
-				std::string name = custom_name.empty() ? 
-								std::filesystem::path(path).filename().string()
-								: custom_name;
-				game._assets.add<sdl::font>(
-						name,
-						sdl::font{path.c_str(), fontsize});
+				return &game._assets.get_vec<sdl::font>().emplace_back(path.c_str(), fontsize);
 			});
 
 	// FPS and Time
-	
 	lua.set_function("GET_ELAPSED_TIME", [&]() -> float
 			{
 				return game._gametime;
 			});
 	// INPUT
-	
 	lua.set_function("GET_INPUT", [&](const std::string& keyname) -> int
 			{
 				return game._ctl._keystate[KEYMAP.at(keyname)];
 			});
-
 	// RENDERING
 	
 	lua["FLIP_NONE"] = SDL_FLIP_NONE;
@@ -92,9 +69,9 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				SDL_GetRendererOutputSize(game._graphics._rdr, &x, &y);
 				return std::make_pair(x,y);
 			});
-	lua.set_function("CREATE_TEXTURE_FOR_DRAWING", [&](const std::string& name, int width, int height)
+	lua.set_function("CREATE_TEXTURE_FOR_DRAWING", [&](int width, int height)
 			{
-				game._assets.add<sdl::texture>(name, sdl::texture{SDL_CreateTexture(game._graphics._rdr, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height)});
+				return &game._assets.get_vec<sdl::texture>().emplace_back(SDL_CreateTexture(game._graphics._rdr, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height));
 			});
 	lua.set_function("SET_VIEWPORT", [&](int x, int y, int w, int h)
 			{
@@ -114,17 +91,15 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				SDL_RenderSetClipRect(game._graphics._rdr, nullptr);
 			});
-	lua.set_function("SET_TEXTURE_BLEND_MODE", [&](const std::string& texturename, const std::string& blendmode)
+	lua.set_function("SET_TEXTURE_BLEND_MODE", [&](sdl::texture* tex, const std::string& blendmode)
 			{
-				sdl::texture* tex = game._assets.get<sdl::texture>(texturename);
 				if (blendmode == "additive") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_ADD);
 				if (blendmode == "modulate") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_MOD);
 				if (blendmode == "multiply") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_MUL);
 				if (blendmode == "blend") SDL_SetTextureBlendMode(*tex, SDL_BLENDMODE_BLEND);
 			});
-	lua.set_function("SET_TEXTURE_COLOR_MOD", [&](const std::string& texturename, const sol::table& color)
+	lua.set_function("SET_TEXTURE_COLOR_MOD", [&](sdl::texture* tex, const sol::table& color)
 			{
-				sdl::texture* tex = game._assets.get<sdl::texture>(texturename);
 				SDL_SetTextureColorMod(*tex, color[1], color[2], color[3]);
 				SDL_SetTextureAlphaMod(*tex, color[4]);
 			});
@@ -135,10 +110,12 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				if (blendmode == "multiply") SDL_SetRenderDrawBlendMode(game._graphics._rdr, SDL_BLENDMODE_MUL);
 				if (blendmode == "blend") SDL_SetRenderDrawBlendMode(game._graphics._rdr, SDL_BLENDMODE_BLEND);
 			});
-	lua.set_function("SET_RENDER_TARGET", [&](const std::string& name)
+	lua.set_function("SET_RENDER_TARGET", [&](sdl::texture* tex)
 			{
-				if (name.empty()) SDL_SetRenderTarget(game._graphics._rdr, nullptr);
-				else SDL_SetRenderTarget(game._graphics._rdr, *game._assets.get<sdl::texture>(name));
+				if (tex != nullptr)
+					SDL_SetRenderTarget(game._graphics._rdr, *tex);
+				else
+					SDL_SetRenderTarget(game._graphics._rdr, nullptr);
 			});
 
 	lua.set_function("SET_FULLSCREEN", [&](bool fc){SDL_SetWindowFullscreen(game._graphics._wd, fc);});
@@ -160,7 +137,7 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				game._graphics.circle(x,y,radius,filled);
 			});
 
-	lua.set_function("DRAW_TEXTURE", [&](const std::string& texture_name, const sol::table& param)
+	lua.set_function("DRAW_TEXTURE", [&](sdl::texture* tex, const sol::table& param)
 			{
 				double angle = param["angle"].get_or(0);
 				unsigned flipflag = param["flipflag"].get_or(0);
@@ -170,82 +147,70 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				if (param["dst"].valid())
 				{
 					auto luadst = param["dst"];
-					dst =  { luadst["x"].get_or(0.f),
-							 luadst["y"].get_or(0.f),
-							 luadst["w"].get_or(0.f),
-							 luadst["h"].get_or(0.f)
+					dst =  { luadst[1].get_or(0.f),
+							 luadst[2].get_or(0.f),
+							 luadst[3].get_or(0.f),
+							 luadst[4].get_or(0.f)
 							};
 				};
 
 				if (param["src"].valid())
 				{
 					auto luasrc = param["src"];
-					src =  { luasrc["x"].get_or(0.f),
-							 luasrc["y"].get_or(0.f),
-							 luasrc["w"].get_or(0.f),
-							 luasrc["h"].get_or(0.f)
+					src =  { luasrc[1].get_or(0.f),
+							 luasrc[2].get_or(0.f),
+							 luasrc[3].get_or(0.f),
+							 luasrc[4].get_or(0.f)
 							};
 				};
 
 				if (param["pivot"].valid())
 				{
-					pivot = {param["pivot"]["x"].get_or(0.f),
-							 param["pivot"]["y"].get_or(0.f)};
+					pivot = {param["pivot"][1].get_or(0.f),
+							 param["pivot"][2].get_or(0.f)};
 				};
-				
-				sdl::texture* to_draw = game._assets.get<sdl::texture>(texture_name);
-				game._graphics.texture(*to_draw, dst, src, angle, pivot, flipflag);
+				game._graphics.texture(*tex, dst, src, angle, pivot, flipflag);
 			});
 	
 
-	lua.set_function("SET_FONT_SIZE", [&](const std::string& fontname, int size)
+	lua.set_function("SET_FONT_SIZE", [&](sdl::font* font, int size)
 			{
-				sdl::font* font = game._assets.get<sdl::font>(fontname);
 				TTF_SetFontSize(*font, size);
 			});
 	// Draw using topleft
-	lua.set_function("DRAW_TEXT", [&](float x, float y, const std::string& fontname, float scale,
+	lua.set_function("DRAW_TEXT", [&](float x, float y, sdl::font* font, float scale,
 				const std::string& content, int wraplength, bool blended)
 			{
-				sdl::font* font = game._assets.get<sdl::font>(fontname);
 				if (blended) 
 					game._graphics.text_blended({x,y}, *font, content, scale, wraplength);
 				else 
 					game._graphics.text_solid({x,y}, *font, content, scale, wraplength);
 			});
 	// draw using center
-	lua.set_function("DRAW_TEXT_CENTERED", [&](float x, float y, const std::string& fontname, float scale,
+	lua.set_function("DRAW_TEXT_CENTERED", [&](float x, float y, sdl::font* font, float scale,
 				const std::string& content, int wraplength, bool blended)
 			{
-				sdl::font* font = game._assets.get<sdl::font>(fontname);
 				if (blended) 
 					game._graphics.text_blended({x,y}, *font, content, scale, wraplength, graphics::TEXT_ALIGNMENT::CENTER);
 				else 
 					game._graphics.text_solid({x,y}, *font, content, scale, wraplength, graphics::TEXT_ALIGNMENT::CENTER);
 			});
-	lua.set_function("DRAW_TEXT_RIGHT", [&](float x, float y, const std::string& fontname, float scale,
+	lua.set_function("DRAW_TEXT_RIGHT", [&](float x, float y, sdl::font* font, float scale,
 				const std::string& content, int wraplength, bool blended)
 			{
-				sdl::font* font = game._assets.get<sdl::font>(fontname);
 				if (blended) 
 					game._graphics.text_blended({x,y}, *font, content, scale, wraplength, graphics::TEXT_ALIGNMENT::RIGHT);
 				else 
 					game._graphics.text_solid({x,y}, *font, content, scale, wraplength, graphics::TEXT_ALIGNMENT::RIGHT);
 			});
-	lua.set_function("IMAGE_SIZE", [&](const std::string& name) -> sol::table
+	lua.set_function("IMAGE_SIZE", [&](sdl::texture* tex)
 			{
-				if (!game._assets.get_map<sdl::texture>().contains(name))
-					return sol::nil;
-				return lua.create_table_with(
-						"w", game._assets.get<sdl::texture>(name)->_width,
-						"h", game._assets.get<sdl::texture>(name)->_height);
+				return std::make_pair(tex->_width, tex->_height);
 			});
 
 
-	lua.set_function("PLAY_SOUND", [&](const std::string& name, int channel, int loop)
+	lua.set_function("PLAY_SOUND", [&](sdl::soundchunk* sound, int channel, int loop)
 			{
-				sdl::soundchunk* sound = game._assets.get<sdl::soundchunk>(name);
-
 				return Mix_PlayChannel(channel, *sound, loop);
 			});
 	lua.set_function("PAUSE_CHANNEL", [&](int channel)
@@ -260,18 +225,16 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				Mix_AllocateChannels(number);
 			});
-	lua.set_function("FADE_IN_MUSIC", [&](const std::string& name, int loop, int ms)
+	lua.set_function("FADE_IN_MUSIC", [&](sdl::music* music, int loop, int ms)
 			{
-				sdl::music* music = game._assets.get<sdl::music>(name);
 				Mix_FadeInMusic(*music, loop, ms);
 			});
 	lua.set_function("FADE_OUT_MUSIC", [&](int ms)
 			{
 				Mix_FadeOutMusic(ms);
 			});
-	lua.set_function("FADE_IN_CHANNEL", [&](const std::string& name, int channel, int loop, int ms)
+	lua.set_function("FADE_IN_CHANNEL", [&](sdl::soundchunk* sound, int channel, int loop, int ms)
 			{
-				sdl::soundchunk* sound = game._assets.get<sdl::soundchunk>(name);
 				return Mix_FadeInChannel(channel, *sound, loop, ms);
 			});
 	lua.set_function("FADE_OUT_CHANNEL", [&](int channel, int ms)
@@ -286,9 +249,8 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				return Mix_PlayingMusic() == 1 ? true:false;
 			});
-	lua.set_function("PLAY_MUSIC", [&](const std::string& name, int loop)
+	lua.set_function("PLAY_MUSIC", [&](sdl::music* music, int loop)
 			{
-				sdl::music* music = game._assets.get<sdl::music>(name);
 				Mix_PlayMusic(*music, loop);
 			});
 	lua.set_function("SET_VSYNC", [&](bool on)
@@ -307,9 +269,8 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				Mix_VolumeMusic(volume);
 			});
-	lua.set_function("SET_VOLUME_SOUND", [&](const std::string& soundname, int volume)
+	lua.set_function("SET_VOLUME_SOUND", [&](sdl::soundchunk* sound, int volume)
 			{
-				sdl::soundchunk* sound = game._assets.get<sdl::soundchunk>(soundname);
 				Mix_VolumeChunk(*sound, volume);
 			});
 	lua.set_function("SET_VOLUME_CHANNEL", [&](int channel, int volume)

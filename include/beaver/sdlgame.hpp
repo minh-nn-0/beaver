@@ -11,7 +11,7 @@ namespace beaver
 	constexpr unsigned MSPF_60 = 17; //milliseconds per frame
 	constexpr unsigned MSPF_30 = 34; //milliseconds per frame
 
-	using assets_manager = beaver::resource::manager<sdl::texture, sdl::music, sdl::soundchunk, sdl::font>;
+	using assets_manager = beaver::resource::manager_v2<sdl::texture, sdl::music, sdl::soundchunk, sdl::font>;
 
 	struct sdlgame
 	{
