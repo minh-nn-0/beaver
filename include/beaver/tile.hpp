@@ -51,7 +51,7 @@ namespace beaver::tile
 
 	struct image_layer
 	{
-		std::string _image_name;
+		std::string _imgname;
 		int _textureid {-1};
 		mmath::fvec2 _position;
 	};

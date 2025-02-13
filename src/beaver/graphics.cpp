@@ -291,7 +291,7 @@ void draw_tilelayer(const tilelayer& tl,
 		drawdata ddata,
 		beaver::graphics& graphic, 
 		const tilemap& tm,
-		const std::vector<sdl::texture*>& textures)
+		const std::vector<sdl::texture>& textures)
 {
 	auto [parallax, offset, tint] = ddata;
 	for (int i = 0; i != tl._data.size(); i++)
@@ -301,15 +301,9 @@ void draw_tilelayer(const tilelayer& tl,
 			auto [flipflag, tileid] = tiled::get_flipflags(tile);
 
 			const tileset& ts = tm.tileset_at(tileid); 
-			if (ts._textureid == -1)
-			{
-				std::println("image {} not found", ts._filename);
-				return;
-			};
-			
-			sdl::texture* ts_tex = textures.at(ts._textureid);
-			SDL_SetTextureAlphaMod(*ts_tex, tint[3]);
-			SDL_SetTextureColorMod(*ts_tex, tint[0], tint[1], tint[2]);
+			const sdl::texture& ts_tex = textures.at(ts._textureid);
+			SDL_SetTextureAlphaMod(ts_tex, tint[3]);
+			SDL_SetTextureColorMod(ts_tex, tint[0], tint[1], tint[2]);
 			
 			mmath::irect src(tiled::rect_at(tileid, ts));
 			mmath::frect dst(tiled::rect_at(i, tm));
@@ -324,10 +318,10 @@ void draw_tilelayer(const tilelayer& tl,
 			//dst._pos.x -= cam._view._pos.x * parallax.x - offset.x;
 			//dst._pos.y -= cam._view._pos.y * parallax.y - offset.y;
 			
-			graphic.texture(*ts_tex, dst, src, 0, {0,0}, flipflag);
+			graphic.texture(ts_tex, dst, src, 0, {0,0}, flipflag);
 			
-			SDL_SetTextureAlphaMod(*ts_tex, 255);
-			SDL_SetTextureColorMod(*ts_tex, 255, 255, 255);
+			SDL_SetTextureAlphaMod(ts_tex, 255);
+			SDL_SetTextureColorMod(ts_tex, 255, 255, 255);
 		};
 	};
 };
@@ -336,22 +330,17 @@ void draw_imagelayer(const image_layer& il,
 		const mmath::fvec2& pos,
 		drawdata ddata,
 		beaver::graphics& graphic, 
-		const std::vector<sdl::texture*>& textures)
+		const std::vector<sdl::texture>& textures)
 {
-	if (il._textureid == -1)
-	{
-		std::println("image {} not found", il._image_name);
-		return;
-	}
-	sdl::texture* image = textures.at(il._textureid);
 	auto [parallax, offset, tint] = ddata;
-	SDL_SetTextureAlphaMod(*image, tint[3]);
-	SDL_SetTextureColorMod(*image, tint[0], tint[1], tint[2]);
-	mmath::frect dst = {pos, {static_cast<float>(image->_width), static_cast<float>(image->_height)}};
+	const sdl::texture& image = textures.at(il._textureid);
+	SDL_SetTextureAlphaMod(image, tint[3]);
+	SDL_SetTextureColorMod(image, tint[0], tint[1], tint[2]);
+	mmath::frect dst = {pos, {static_cast<float>(image._width), static_cast<float>(image._height)}};
 
-	graphic.texture(*image, dst);
-	SDL_SetTextureAlphaMod(*image, 255);
-	SDL_SetTextureColorMod(*image, 255, 255, 255);
+	graphic.texture(image, dst);
+	SDL_SetTextureAlphaMod(image, 255);
+	SDL_SetTextureColorMod(image, 255, 255, 255);
 
 };
 
@@ -370,7 +359,7 @@ std::vector<std::string> extract_groups (const std::string& string)
 
 void beaver::graphics::tilemap(const beaver::tile::tilemap& tm,
 		const mmath::fvec2& pos,
-		const std::vector<sdl::texture*>& textures)
+		const std::vector<sdl::texture>& textures)
 {
 	for (std::size_t i = 0; i != tm._layers.second.size(); i++)
 	{ 
@@ -400,7 +389,7 @@ void beaver::graphics::tilemap(const beaver::tile::tilemap& tm,
 void beaver::graphics::tilemap_by_layer(const beaver::tile::tilemap& tm,
 		const std::string& layer_name,
 		const mmath::fvec2& pos,
-		const std::vector<sdl::texture*>& textures)
+		const std::vector<sdl::texture>& textures)
 {
 	if (!tm._layers.first.contains(layer_name))
 	{

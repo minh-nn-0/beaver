@@ -105,6 +105,7 @@ namespace beaver
 			using storage_t = std::tuple<std::vector<Ts>...>;
 			
 			storage_t<RsrcTs...> _storage;
+
 			template<typename RsrcT>
 			std::vector<RsrcT>& get_vec() {return std::get<std::vector<RsrcT>>(_storage);};
 			

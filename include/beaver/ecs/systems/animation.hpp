@@ -22,13 +22,13 @@ namespace beaver::system::animation
 				std::cerr << "eid " << eid << "have tile animation but didn't set image" << std::endl;
 			else
 			{
-				sdl::texture* img = assets.get<sdl::texture>(img_render->_image_name);
+				const sdl::texture& img = assets.get_vec<sdl::texture>().at(img_render->_textureid);
 				img_render->_source = utils::rect_at(
 									anim->current_frame()._id,
 									anim->_framewidth,
 									anim->_frameheight,
-									img->_width,
-									img->_height);
+									img._width,
+									img._height);
 			}
 		};
 							

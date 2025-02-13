@@ -194,56 +194,14 @@ namespace beaver::scripting
 	template<typename... Ts>
 	void bind_image_render(beaver::ecs<Ts...>& ecs, sol::table& tbl, sol::state& lua)
 	{
-		tbl.set_function("set_image", [&](std::size_t eid, const std::string& img_name)
+		tbl.set_function("set_image", [&](std::size_t eid, std::size_t textureid)
 				{
-					ecs.template get_or_set_component<image_render>(eid)->_image_name = img_name;
+					ecs.template get_or_set_component<image_render>(eid)->_textureid = textureid;
 				});
 		tbl.set_function("set_image_source", [&](std::size_t eid, float x, float y, float w, float h)
 				{
 					ecs.template get_or_set_component<image_render>(eid)->_source = 
 							mmath::frect {x,y,w,h};
-				});
-		tbl.set_function("get_image", [&](std::size_t eid) -> sol::object
-				{
-					auto& img = ecs.template get_component<image_render>(eid);
-					if (img.has_value()) return sol::make_object(lua, img->_image_name);
-					else return sol::nil;
-				});
-	};
-
-	template<typename... Ts>
-	void bind_entity_render(beaver::ecs<Ts...>& ecs, sdlgame& sdl, sol::table& tbl)
-	{
-		tbl.set_function("render_entity", [&](std::size_t eid)
-				{
-					auto& position = ecs.template get_component<component::position>(eid);
-					auto& scale = ecs.template get_component<component::scale>(eid);
-					auto& pivot = ecs.template get_component<component::pivot>(eid);
-					auto& rotation = ecs.template get_component<component::rotation>(eid);
-					auto& image_render = ecs.template get_component<component::image_render>(eid);
-					auto& flip = ecs.template get_component<flipflag>(eid);
-
-					if (!position.has_value() || !image_render.has_value()) return;
-
-					const mmath::irect& src = image_render->_source;
-					const auto* texture = sdl._assets.get<sdl::texture>(image_render->_image_name);
-					mmath::frect dst {
-						position->_value.x,
-						position->_value.y,
-						scale.has_value() ? src._size.x * scale->_value.x : src._size.x,
-						scale.has_value() ? src._size.y * scale->_value.y : src._size.y
-					};
-
-					double angle = rotation.has_value() ? rotation->_value : 0.0;
-
-					unsigned flipflags = flip.has_value() ? static_cast<SDL_RendererFlip>(flip->_value) : SDL_FLIP_NONE;
-					mmath::fvec2 pv = pivot.has_value() ? pivot->_value : mmath::fvec2{0,0};
-					sdl._graphics.texture(*texture, 
-							dst, 
-							src, 
-							angle, 
-							pv, 
-							flipflags);
 				});
 	};
 
@@ -609,7 +567,6 @@ namespace beaver::scripting
 		bind_cbox(ecs,tbl,lua);
 		bind_state(ecs, tbl);
 		bind_image_render(ecs, tbl, lua);
-		bind_entity_render(ecs, sdl, tbl);
 		bind_timer(ecs, tbl, lua);
 		bind_stopwatch(ecs, tbl, lua);
 		bind_particle(ecs, tbl);

@@ -6,6 +6,6 @@
 namespace beaver::scripting
 {
 	using namespace tile;
-	using map_container = std::unordered_map<std::string, tilemap>;
+	using map_container = std::vector<tilemap>;
 	void bind_tile(sdlgame& game, map_container& maps, sol::table& tbl);
 };

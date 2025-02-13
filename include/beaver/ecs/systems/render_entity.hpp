@@ -30,16 +30,16 @@ namespace beaver::system::render
 		if (!position.has_value() || !image_render.has_value())
 			return;
 
-		const auto* texture = game._assets.get<sdl::texture>(image_render->_image_name);
+		const sdl::texture& texture = game._assets.get_vec<sdl::texture>().at(image_render->_textureid);
 		
 		color oldcolor;
-		SDL_GetTextureColorMod(*texture, &oldcolor._value[0], &oldcolor._value[1], &oldcolor._value[2]);
-		SDL_GetTextureAlphaMod(*texture, &oldcolor._value[3]);
+		SDL_GetTextureColorMod(texture, &oldcolor._value[0], &oldcolor._value[1], &oldcolor._value[2]);
+		SDL_GetTextureAlphaMod(texture, &oldcolor._value[3]);
 	
 		if (cl.has_value())
 		{
-			SDL_SetTextureColorMod(*texture, cl->_value[0], cl->_value[1], cl->_value[2]);
-			SDL_SetTextureAlphaMod(*texture, cl->_value[3]);
+			SDL_SetTextureColorMod(texture, cl->_value[0], cl->_value[1], cl->_value[2]);
+			SDL_SetTextureAlphaMod(texture, cl->_value[3]);
 		};
 
 		const mmath::irect& src = image_render->_source;
@@ -64,13 +64,13 @@ namespace beaver::system::render
 			pv.x *= game._graphics._cam->_zoom;
 			pv.y *= game._graphics._cam->_zoom;
 		}
-		game._graphics.texture(*texture, 
+		game._graphics.texture(texture, 
 				dst, 
 				src, 
 				angle, 
 				pv, 
 				flipflags);
-		SDL_SetTextureColorMod(*texture, oldcolor._value[0], oldcolor._value[1], oldcolor._value[2]);
-		SDL_SetTextureAlphaMod(*texture, oldcolor._value[3]);
+		SDL_SetTextureColorMod(texture, oldcolor._value[0], oldcolor._value[1], oldcolor._value[2]);
+		SDL_SetTextureAlphaMod(texture, oldcolor._value[3]);
 	};
 };

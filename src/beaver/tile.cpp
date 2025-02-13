@@ -50,7 +50,7 @@ std::string loadlayer(const nlohmann::json& tmj, const std::string& parent_name,
 	else if (ltype == "imagelayer")
 	{
 		image_layer il;
-		il._image_name = std::filesystem::path{tmj.at("image")}.filename().string();
+		il._imgname = std::filesystem::path{tmj.at("image")}.filename().string();
 		il._position = {tmj.count("offsetx") > 0 ? static_cast<float>(tmj.at("offsetx")) : 0,
 						tmj.count("offsety") > 0 ? static_cast<float>(tmj.at("offsety")) : 0};
 
@@ -117,7 +117,7 @@ void printlayers(const tilemap::layer_manager& layers) {
                       << lname << '\t' 
                       << "type = image\t" 
                       << print_drawdata(layer) << '\t'
-					  << std::get<image_layer>(layer._data)._image_name
+					  << std::get<image_layer>(layer._data)._imgname
                       << '\n';
         }
         if (std::holds_alternative<group>(layer._data)) {
@@ -182,7 +182,7 @@ void beaver::tile::load_textures(tilemap& tm, std::vector<sdl::texture*>& textur
 				{ return tex->_name == texture_name; });
 				find_rs != textures.end())
 			return std::distance(textures.begin(), find_rs);
-		else return -1;
+		else throw std::runtime_error(std::format("img {} not found", texture_name));
 		
 	};
 	//tileset
@@ -193,6 +193,6 @@ void beaver::tile::load_textures(tilemap& tm, std::vector<sdl::texture*>& textur
 	for (auto& layer: tm._layers.second | std::views::filter([](auto& layer){ return std::holds_alternative<image_layer>(layer._data);}))
 	{
 		auto& il = std::get<image_layer>(layer._data);
-		il._textureid = find_texture(il._image_name);
+		il._textureid = find_texture(il._imgname);
 	};
 };
