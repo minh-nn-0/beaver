@@ -58,6 +58,12 @@ namespace beaver::system::render
 							 pivot->_value.y * scale->_value.y}
 				: mmath::fvec2{dst._size.x / 2, dst._size.y / 2};
 
+
+		if (game._graphics._cam != nullptr)
+		{
+			pv.x *= game._graphics._cam->_zoom;
+			pv.y *= game._graphics._cam->_zoom;
+		}
 		game._graphics.texture(*texture, 
 				dst, 
 				src, 

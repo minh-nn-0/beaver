@@ -192,7 +192,7 @@ namespace beaver::scripting
 
 	// ======================== IMAGE RENDER
 	template<typename... Ts>
-	void bind_image_render(beaver::ecs<Ts...>& ecs, sol::table& tbl)
+	void bind_image_render(beaver::ecs<Ts...>& ecs, sol::table& tbl, sol::state& lua)
 	{
 		tbl.set_function("set_image", [&](std::size_t eid, const std::string& img_name)
 				{
@@ -202,6 +202,12 @@ namespace beaver::scripting
 				{
 					ecs.template get_or_set_component<image_render>(eid)->_source = 
 							mmath::frect {x,y,w,h};
+				});
+		tbl.set_function("get_image", [&](std::size_t eid) -> sol::object
+				{
+					auto& img = ecs.template get_component<image_render>(eid);
+					if (img.has_value()) return sol::make_object(lua, img->_image_name);
+					else return sol::nil;
 				});
 	};
 
@@ -343,6 +349,11 @@ namespace beaver::scripting
 							frames.emplace_back(frame.second.as<sol::table>()[1],
 												frame.second.as<sol::table>()[2]);
 					anim->new_frames(frames);
+				});
+		tbl.set_function("reset_tileanimation", [&](std::size_t eid)
+				{
+					if (auto& anim = ecs.template get_component<tile_animation>(eid); anim.has_value())
+						anim->reset();
 				});
 		tbl.set_function("set_animation_repeat", [&](std::size_t eid, bool repeat) 
 				{
@@ -597,7 +608,7 @@ namespace beaver::scripting
 		bind_tile_animation(ecs, tbl, lua);
 		bind_cbox(ecs,tbl,lua);
 		bind_state(ecs, tbl);
-		bind_image_render(ecs, tbl);
+		bind_image_render(ecs, tbl, lua);
 		bind_entity_render(ecs, sdl, tbl);
 		bind_timer(ecs, tbl, lua);
 		bind_stopwatch(ecs, tbl, lua);

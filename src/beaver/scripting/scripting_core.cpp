@@ -63,6 +63,8 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 	lua["FLIP_NONE"] = SDL_FLIP_NONE;
 	lua["FLIP_H"] = SDL_FLIP_HORIZONTAL;
 	lua["FLIP_V"] = SDL_FLIP_VERTICAL;
+	lua["TILED_FLIP_V"] = tiled::TILED_FLIPFLAG_V;
+	lua["TILED_FLIP_H"] = tiled::TILED_FLIPFLAG_H;
 	lua.set_function("CLS", [&]{ SDL_RenderClear(game._graphics._rdr);});
 	lua.set_function("CLS", [&]{ SDL_RenderClear(game._graphics._rdr);});
 	lua.set_function("SET_DRAW_COLOR", 
@@ -262,6 +264,27 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				sdl::music* music = game._assets.get<sdl::music>(name);
 				Mix_FadeInMusic(*music, loop, ms);
+			});
+	lua.set_function("FADE_OUT_MUSIC", [&](int ms)
+			{
+				Mix_FadeOutMusic(ms);
+			});
+	lua.set_function("FADE_IN_CHANNEL", [&](const std::string& name, int channel, int loop, int ms)
+			{
+				sdl::soundchunk* sound = game._assets.get<sdl::soundchunk>(name);
+				return Mix_FadeInChannel(channel, *sound, loop, ms);
+			});
+	lua.set_function("FADE_OUT_CHANNEL", [&](int channel, int ms)
+			{
+				Mix_FadeOutChannel(channel, ms);
+			});
+	lua.set_function("CHANNEL_PLAYING", [&](int channel)
+			{
+				return Mix_Playing(channel) == 1 ? true:false;
+			});
+	lua.set_function("MUSIC_PLAYING", [&]()
+			{
+				return Mix_PlayingMusic() == 1 ? true:false;
 			});
 	lua.set_function("PLAY_MUSIC", [&](const std::string& name, int loop)
 			{

@@ -129,7 +129,7 @@ void printlayers(const tilemap::layer_manager& layers) {
 			std::println("gr layer");
 			for (auto& l: std::get<group>(layer._data)._layers)
 				std::print("{} ", l);
-			std::println();
+			std::println("");
         }
     }
 }
