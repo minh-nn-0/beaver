@@ -136,7 +136,7 @@ function beaver.create_texture_for_drawing(width, height)
 end
 
 function beaver.set_render_target(target)
-	SET_RENDER_TARGET(target)
+	SET_RENDER_TARGET(target or -1)
 end
 function beaver.set_viewport(x,y,w,h)
 	SET_VIEWPORT(x,y,w,h)

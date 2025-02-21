@@ -203,6 +203,13 @@ namespace beaver::scripting
 					ecs.template get_or_set_component<image_render>(eid)->_source = 
 							mmath::frect {x,y,w,h};
 				});
+		tbl.set_function("get_image", [&](std::size_t eid)
+				{
+					auto& img = ecs.template get_component<image_render>(eid);
+					if (img.has_value())
+						return img->_textureid;
+					else throw std::runtime_error("get_image: eid doesn't have image render");
+				});
 	};
 
 	template<typename... Ts>

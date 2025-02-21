@@ -87,6 +87,11 @@ namespace beaver::tile
 		utils::color _bgcolor;
 		int _tilesize, _numx, _numy;
 
+		bool has_layer(const std::string& lname) const
+		{
+			return _layers.first.contains(lname);
+		};
+
 		const layer_t& get_layer(const std::string& lname) const 
 		{
 			return _layers.second.at(_layers.first.at(lname));
@@ -104,7 +109,7 @@ namespace beaver::tile
 	};
 	
 
-	void load_textures(tilemap&, std::vector<sdl::texture*>& textures);
+	void load_textures(tilemap&, std::vector<sdl::texture>& textures);
 };
 
 /*

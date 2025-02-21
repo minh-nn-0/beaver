@@ -130,12 +130,12 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				if (blendmode == "multiply") SDL_SetRenderDrawBlendMode(game._graphics._rdr, SDL_BLENDMODE_MUL);
 				if (blendmode == "blend") SDL_SetRenderDrawBlendMode(game._graphics._rdr, SDL_BLENDMODE_BLEND);
 			});
-	lua.set_function("SET_RENDER_TARGET", [&](sdl::texture* tex)
+	lua.set_function("SET_RENDER_TARGET", [&](std::size_t textureid)
 			{
-				if (tex != nullptr)
-					SDL_SetRenderTarget(game._graphics._rdr, *tex);
-				else
+				if (textureid == -1)
 					SDL_SetRenderTarget(game._graphics._rdr, nullptr);
+				else
+					SDL_SetRenderTarget(game._graphics._rdr, game._assets.get_vec<sdl::texture>().at(textureid));
 			});
 
 	lua.set_function("SET_FULLSCREEN", [&](bool fc){SDL_SetWindowFullscreen(game._graphics._wd, fc);});
@@ -168,20 +168,20 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				if (param["dst"].valid())
 				{
 					auto luadst = param["dst"];
-					dst =  { luadst[1].get_or(0.f),
-							 luadst[2].get_or(0.f),
-							 luadst[3].get_or(0.f),
-							 luadst[4].get_or(0.f)
+					dst =  { luadst["x"].get_or(0.f),
+							 luadst["y"].get_or(0.f),
+							 luadst["w"].get_or(0.f),
+							 luadst["h"].get_or(0.f)
 							};
 				};
 
 				if (param["src"].valid())
 				{
 					auto luasrc = param["src"];
-					src =  { luasrc[1].get_or(0.f),
-							 luasrc[2].get_or(0.f),
-							 luasrc[3].get_or(0.f),
-							 luasrc[4].get_or(0.f)
+					src =  { luasrc["x"].get_or(0.f),
+							 luasrc["y"].get_or(0.f),
+							 luasrc["w"].get_or(0.f),
+							 luasrc["h"].get_or(0.f)
 							};
 				};
 

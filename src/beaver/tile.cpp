@@ -174,12 +174,12 @@ beaver::tile::tilemap::tilemap(const std::filesystem::path& path)
 	printlayers(_layers);
 };
 
-void beaver::tile::load_textures(tilemap& tm, std::vector<sdl::texture*>& textures)
+void beaver::tile::load_textures(tilemap& tm, std::vector<sdl::texture>& textures)
 {
 	auto find_texture = [&](const std::string& texture_name) -> int
 	{
 		if (auto find_rs = std::ranges::find_if(textures, [&](auto&& tex)
-				{ return tex->_name == texture_name; });
+				{ return tex._name == texture_name; });
 				find_rs != textures.end())
 			return std::distance(textures.begin(), find_rs);
 		else throw std::runtime_error(std::format("img {} not found", texture_name));

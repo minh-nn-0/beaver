@@ -10,12 +10,12 @@ namespace mmath
 	struct rectangle
 	{
 		rectangle() = default;
-		rectangle(UnitT x, UnitT y, UnitT w, UnitT h)
+		constexpr rectangle(UnitT x, UnitT y, UnitT w, UnitT h)
 		{
 			_pos = {x,y};
 			_size = {w,h};
 		};
-		rectangle(vec2<UnitT> x, vec2<UnitT> y)
+		constexpr rectangle(vec2<UnitT> x, vec2<UnitT> y)
 		{
 			_pos = x;
 			_size = y;
@@ -24,7 +24,7 @@ namespace mmath
 		vec2<UnitT> _size;
 		
 		template<Numeric N>
-		rectangle<N> operator * (const N& scale) const
+		constexpr rectangle<N> operator * (const N& scale) const
 		{
 			return {_pos * scale, _size * scale};
 		};
@@ -32,7 +32,7 @@ namespace mmath
 		auto operator <=> (const rectangle&) const = default;
 
 		template<Numeric T>
-		operator rectangle<T>()
+		operator rectangle<T>() const
 		{
 			return rectangle<T>
 			{
