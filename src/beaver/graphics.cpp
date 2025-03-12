@@ -179,7 +179,6 @@ void beaver::graphics::texture(const sdl::texture& tex,
 	SDL_FPoint p;
 	p.x = pivot.x;
 	p.y = pivot.y;
-
 	SDL_RenderCopyExF(_rdr, tex, sdlsrc, sdldst, angle, &p, static_cast<SDL_RendererFlip>(flipflags));
 };
 

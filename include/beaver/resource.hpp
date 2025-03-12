@@ -108,6 +108,11 @@ namespace beaver
 
 			template<typename RsrcT>
 			std::vector<RsrcT>& get_vec() {return std::get<std::vector<RsrcT>>(_storage);};
+
+			void reserve(int size)
+			{
+				(get_vec<RsrcTs>().reserve(size),...);
+			};
 			
 			template<typename RsrcT>
 			const std::vector<RsrcT>& get_cvec() const {return std::get<std::vector<RsrcT>>(_storage);};

@@ -366,6 +366,10 @@ namespace beaver::scripting
 			{
 				ecs.template get_or_set_component<timing::stopwatch>(eid)->reset();
 			});
+		tbl.set_function("unset_stopwatch", [&](std::size_t eid)
+			{
+	
+			});
 	};
 	
 
