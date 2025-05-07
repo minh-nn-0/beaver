@@ -1,10 +1,12 @@
 include(FetchContent)
 
 Set(FETCHCONTENT_QUIET FALSE)
+
+
 if (WIN32)
 	FetchContent_Declare(
 		SDL2
-		URL https://github.com/libsdl-org/SDL/releases/download/release-2.30.9/SDL2-devel-2.30.9-mingw.zip)
+		URL https://github.com/libsdl-org/SDL/releases/download/release-2.32.2/SDL2-devel-2.32.2-mingw.zip)
 
 	FetchContent_Declare(
 		SDL2_image
@@ -35,7 +37,7 @@ if (WIN32)
 else()
 	FetchContent_Declare(
 		SDL2
-		URL https://github.com/libsdl-org/SDL/releases/download/release-2.30.9/SDL2-2.30.9.zip)
+		URL https://github.com/libsdl-org/SDL/releases/download/release-2.32.2/SDL2-2.32.2.zip)
 
 	FetchContent_Declare(
 		SDL2_image
