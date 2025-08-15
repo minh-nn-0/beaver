@@ -88,7 +88,7 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 	lua.set_function("CREATE_TEXTURE_FOR_DRAWING", [&](int width, int height)
 			{
 				auto& vec = game._assets.get_vec<sdl::texture>();
-				vec.emplace_back(SDL_CreateTexture(game._graphics._rdr, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height));
+				vec.emplace_back(SDL_CreateTexture(game._graphics._rdr, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_TARGET, width, height));
 				return vec.size() - 1;
 			});
 	lua.set_function("SET_VIEWPORT", [&](int x, int y, int w, int h)
