@@ -6,7 +6,8 @@ color::value_t particle_emitter::current_color_gradient(std::size_t pid)
 	auto& life = _particles.get_component<timing::countdown>(pid).value();
 	float progress = life.progress();
 	auto& colors = _particles.get_component<color_gradient>(pid).value();
-	for (std::size_t i = 0; i != colors._value.size(); i++)
+
+	for (std::size_t i = 0; i + 1 < colors._value.size(); i++)
 	{
 		const auto& kf1 = colors._value[i];
 		const auto& kf2 = colors._value[i+1];
@@ -21,8 +22,8 @@ color::value_t particle_emitter::current_color_gradient(std::size_t pid)
 };
 void particle_emitter::auto_emit()
 {
-	std::uniform_real_distribution<float> positionx_dist{0.f, _config._area.x},
-										  positiony_dist{0.f, _config._area.y},
+	std::uniform_real_distribution<float> positionx_dist{std::min(0.f, _config._area.x), std::max(0.f, _config._area.x)},
+										  positiony_dist{std::min(0.f, _config._area.y), std::max(0.f, _config._area.y)},
 										  speed_dist{_config._speed_variation.x, _config._speed_variation.y},
 										  size_dist{_config._size_variation.x, _config._size_variation.y},
 										  spread_dist{- _config._spread / 2.f, _config._spread/ 2.f};
