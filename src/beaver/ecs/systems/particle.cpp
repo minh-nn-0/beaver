@@ -6,8 +6,7 @@ color::value_t particle_emitter::current_color_gradient(std::size_t pid)
 	auto& life = _particles.get_component<timing::countdown>(pid).value();
 	float progress = life.progress();
 	auto& colors = _particles.get_component<color_gradient>(pid).value();
-
-	for (std::size_t i = 0; i + 1 < colors._value.size(); i++)
+	for (std::size_t i = 0; i != colors._value.size() - 1; i++)
 	{
 		const auto& kf1 = colors._value[i];
 		const auto& kf2 = colors._value[i+1];
@@ -16,14 +15,17 @@ color::value_t particle_emitter::current_color_gradient(std::size_t pid)
 			float t = (progress - kf1._time) / (kf2._time - kf1._time);
 			return utils::lerp_rgba(kf1._color._value, kf2._color._value, t);
 		};
-	};
+	}
 	return colors._value.back()._color._value;
 
 };
 void particle_emitter::auto_emit()
 {
-	std::uniform_real_distribution<float> positionx_dist{std::min(0.f, _config._area.x), std::max(0.f, _config._area.x)},
-										  positiony_dist{std::min(0.f, _config._area.y), std::max(0.f, _config._area.y)},
+	float x0 = 0, x1 = _config._area.x, y0 = 0, y1 = _config._area.y;
+	if (x1 < x0) std::swap(x0,x1);
+	if (y1 < y0) std::swap(y0,y1);
+	std::uniform_real_distribution<float> positionx_dist{x0,x1},
+										  positiony_dist{y0,y1},
 										  speed_dist{_config._speed_variation.x, _config._speed_variation.y},
 										  size_dist{_config._size_variation.x, _config._size_variation.y},
 										  spread_dist{- _config._spread / 2.f, _config._spread/ 2.f};
