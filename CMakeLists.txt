@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.25)
+cmake_minimum_required(VERSION 4.0)
 
 project(beaver
 	VERSION 1.0
@@ -37,6 +37,9 @@ target_link_libraries(beaver PUBLIC sdlwrapper imgui_sdl mmath tiledwrapper lua)
 if (WIN32)
 	target_compile_options(beaver PUBLIC -m64 -Wa,-mbig-obj)
 	target_link_libraries(beaver PUBLIC "-lstdc++exp")
+	if (CMAKE_BUILD_TYPE STREQUAL "Release")
+		target_link_options(beaver PUBLIC -mwindows)
+	endif()
 endif()
 if (EMSCRIPTEN)
 endif()

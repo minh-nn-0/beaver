@@ -6,16 +6,17 @@ color::value_t particle_emitter::current_color_gradient(std::size_t pid)
 	auto& life = _particles.get_component<timing::countdown>(pid).value();
 	float progress = life.progress();
 	auto& colors = _particles.get_component<color_gradient>(pid).value();
-	for (std::size_t i = 0; i != colors._value.size() - 1; i++)
-	{
-		const auto& kf1 = colors._value[i];
-		const auto& kf2 = colors._value[i+1];
-		if (progress >= kf1._time && progress <= kf2._time)
+		for (std::size_t i = 0; i != colors._value.size(); i++)
 		{
-			float t = (progress - kf1._time) / (kf2._time - kf1._time);
-			return utils::lerp_rgba(kf1._color._value, kf2._color._value, t);
-		};
-	}
+			const auto& kf1 = colors._value[i];
+			if (i == colors._value.size() - 1) return kf1._color._value;
+			const auto& kf2 = colors._value[i+1];
+			if (progress >= kf1._time && progress <= kf2._time)
+			{
+				float t = (progress - kf1._time) / (kf2._time - kf1._time);
+				return utils::lerp_rgba(kf1._color._value, kf2._color._value, t);
+			};
+		}
 	return colors._value.back()._color._value;
 
 };
@@ -33,7 +34,6 @@ void particle_emitter::auto_emit()
 
 
 	float size = size_dist(_re);
-	std::array<unsigned char, 4> pcolor = {255,255,255,255};
 
 	position pos = {_config._emitting_position.x + positionx_dist(_re), 
 					_config._emitting_position.y + positiony_dist(_re)};
@@ -49,14 +49,20 @@ void particle_emitter::auto_emit()
 	_particles.set_component<position>(new_particle, pos);
 	_particles.set_component<velocity>(new_particle, vel);
 	_particles.set_component<scale>(new_particle, scale{size, size});
-	_particles.set_component<color>(new_particle, color{pcolor});
 	_particles.set_component<timing::countdown>(new_particle, lifetime);
-	if (_config._colors._value.size() > 0) _particles.set_component<color_gradient>(new_particle, _config._colors);
+
+	std::array<unsigned char, 4> pcolor = {255,255,255,255};
+	if (_config._colors._value.size() > 0)
+	{
+		_particles.set_component<color_gradient>(new_particle, _config._colors);
+		pcolor = _config._colors._value.back()._color._value;
+	};
+	_particles.set_component<color>(new_particle, color{pcolor});
 };
 
 void particle_emitter::manual_emit(int number, float x, float y, const particle_config& config)
 {
-	float x0 = 0, x1 = x, y0 = 0, y1 = y;
+	float x0 = 0, x1 = _config._area.x, y0 = 0, y1 = _config._area.y;
 	if (x1 < x0) std::swap(x0,x1);
 	if (y1 < y0) std::swap(y0,y1);
 	for (int i = 0; i!= number; i++)
@@ -70,8 +76,6 @@ void particle_emitter::manual_emit(int number, float x, float y, const particle_
 
 
 		float size = size_dist(_re);
-
-		color::value_t pcolor = {255,255,255,255};
 
 		position pos = {x + positionx_dist(_re), 
 						y + positiony_dist(_re)};
@@ -87,10 +91,15 @@ void particle_emitter::manual_emit(int number, float x, float y, const particle_
 		_particles.set_component<position>(new_particle, pos);
 		_particles.set_component<velocity>(new_particle, vel);
 		_particles.set_component<scale>(new_particle, scale{size, size});
-		_particles.set_component<color>(new_particle, color{pcolor});
 		_particles.set_component<timing::countdown>(new_particle, lifetime);
 
-		if (config._colors._value.size() > 0) _particles.set_component<color_gradient>(new_particle, config._colors);
+		std::array<unsigned char, 4> pcolor = {255,255,255,255};
+		if (_config._colors._value.size() > 0)
+		{
+			_particles.set_component<color_gradient>(new_particle, _config._colors);
+			pcolor = _config._colors._value.back()._color._value;
+		};
+		_particles.set_component<color>(new_particle, color{pcolor});
 	};
 };
 

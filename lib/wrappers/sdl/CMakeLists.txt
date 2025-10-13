@@ -9,22 +9,12 @@ add_library(sdlwrapper src/sdlwrapper.cpp)
 
 target_include_directories(sdlwrapper PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-# 1. Look for a SDL2 package, 2. look for the SDL2 component and 3. fail if none can be found
-if (WIN32)
-	find_package(SDL2 REQUIRED)
-	find_package(SDL2_image REQUIRED)
-	find_package(SDL2_ttf REQUIRED)
-	find_package(SDL2_mixer REQUIRED)
-endif()
-
 # SDL2::SDL2main may or may not be available. It is e.g. required by Windows GUI applications
 if(TARGET SDL2::SDL2main)
     # It has an implicit dependency on SDL2 functions, so it MUST be added before SDL2::SDL2 (or SDL2::SDL2-static)
 	target_link_libraries(sdlwrapper PUBLIC SDL2::SDL2main)
 endif()
-if (BUILD_SHARED_LIBS)
-	target_link_libraries(sdlwrapper PUBLIC SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
-else()
-	target_link_libraries(sdlwrapper PUBLIC SDL2::SDL2-static SDL2_image::SDL2_image-static SDL2_ttf::SDL2_ttf-static SDL2_mixer::SDL2_mixer-static)
-endif()
+
+target_link_libraries(sdlwrapper PUBLIC SDL2::SDL2 SDL2_image::SDL2_image SDL2_ttf::SDL2_ttf SDL2_mixer::SDL2_mixer)
+
 add_subdirectory(test)

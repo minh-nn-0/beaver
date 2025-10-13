@@ -1,57 +1,85 @@
 include(FetchContent)
+set(FETCHCONTENT_QUIET FALSE)
 
-Set(FETCHCONTENT_QUIET FALSE)
+option(USE_SYSTEM_SDL "Use system-installed SDL libraries" OFF)
 
-
-if (WIN32)
-	FetchContent_Declare(
-		SDL2
-		URL https://github.com/libsdl-org/SDL/releases/download/release-2.32.2/SDL2-devel-2.32.2-mingw.zip)
-
-	FetchContent_Declare(
-		SDL2_image
-		URL https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.2/SDL2_image-devel-2.8.2-mingw.zip)
-
-	FetchContent_Declare(
-		SDL2_ttf
-		URL https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.22.0/SDL2_ttf-devel-2.22.0-mingw.zip)
-
-	FetchContent_Declare(
-		SDL2_mixer
-		URL https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-devel-2.8.0-mingw.zip)
-	# Explicitly set SDL2 include directory and library path
-
-	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_ttf SDL2_mixer)
-	list(APPEND CMAKE_PREFIX_PATH ${sdl2_SOURCE_DIR}/cmake)
-	list(APPEND CMAKE_PREFIX_PATH ${sdl2_image_SOURCE_DIR}/cmake)
-	list(APPEND CMAKE_PREFIX_PATH ${sdl2_mixer_SOURCE_DIR}/cmake)
-	list(APPEND CMAKE_PREFIX_PATH ${sdl2_ttf_SOURCE_DIR}/cmake)
-	message(STATUS "Checking for SDL2 library: ${sdl2_SOURCE_DIR}/lib/libSDL2.a")
-	message(STATUS "Checking for SDL2 library: ${sdl2_image_SOURCE_DIR}/lib/libSDL2.a")
-	message(STATUS "Checking for SDL2 library: ${sdl2_mixer_SOURCE_DIR}/lib/libSDL2.a")
-	message(STATUS "Checking for SDL2 library: ${sdl2_ttf_SOURCE_DIR}/lib/libSDL2.a")
-	find_package(SDL2 REQUIRED)
-	find_package(SDL2_image REQUIRED)
-	find_package(SDL2_ttf REQUIRED)
-	find_package(SDL2_mixer REQUIRED)
+if(USE_SYSTEM_SDL)
+    find_package(SDL2 REQUIRED)
+    find_package(SDL2_image REQUIRED)
+    find_package(SDL2_ttf REQUIRED)
+    find_package(SDL2_mixer REQUIRED)
 else()
-	FetchContent_Declare(
-		SDL2
-		URL https://github.com/libsdl-org/SDL/releases/download/release-2.32.6/SDL2-2.32.6.zip)
-
-	FetchContent_Declare(
-		SDL2_image
-		URL https://github.com/libsdl-org/SDL_image/releases/download/release-2.8.2/SDL2_image-2.8.2.zip)
-
-	FetchContent_Declare(
-		SDL2_ttf
-		URL https://github.com/libsdl-org/SDL_ttf/releases/download/release-2.22.0/SDL2_ttf-2.22.0.zip)
-
-	FetchContent_Declare(
-		SDL2_mixer
-		URL https://github.com/libsdl-org/SDL_mixer/releases/download/release-2.8.0/SDL2_mixer-2.8.0.zip)
-	
-	FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_ttf SDL2_mixer)
+    message(STATUS "Building SDL2 libraries from source...")
+    
+	# Prevent SDL from installing system-wide
+    set(SDL2_DISABLE_INSTALL ON CACHE BOOL "" FORCE)
+    set(SDL_TEST OFF CACHE BOOL "" FORCE)
+    
+    FetchContent_Declare(
+        SDL2
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-2.32.6
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+    )
+    
+    FetchContent_Declare(
+        SDL2_image
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_image.git
+        GIT_TAG release-2.8.2
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+    )
+    
+    FetchContent_Declare(
+        SDL2_ttf
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf.git
+        GIT_TAG release-2.22.0
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+    )
+    
+    FetchContent_Declare(
+        SDL2_mixer
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
+        GIT_TAG release-2.8.0
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+    )
+    
+    set(SDL2IMAGE_INSTALL OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_SAMPLES OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_TESTS OFF CACHE BOOL "" FORCE)
+    set(SDL2IMAGE_VENDORED ON CACHE BOOL "" FORCE)
+    
+    set(SDL2TTF_INSTALL OFF CACHE BOOL "" FORCE)
+    set(SDL2TTF_SAMPLES OFF CACHE BOOL "" FORCE)
+    set(SDL2TTF_VENDORED ON CACHE BOOL "" FORCE)
+    
+    set(SDL2MIXER_INSTALL OFF CACHE BOOL "" FORCE)
+    set(SDL2MIXER_SAMPLES OFF CACHE BOOL "" FORCE)
+    set(SDL2MIXER_VORBIS OFF CACHE BOOL "" FORCE)
+    set(SDL2MIXER_OPUS OFF CACHE BOOL "" FORCE)
+    set(SDL2MIXER_WAVPACK OFF CACHE BOOL "" FORCE)
+    set(SDL2MIXER_MOD OFF CACHE BOOL "" FORCE)
+    set(SDL2MIXER_MIDI_FLUIDSYNTH OFF CACHE BOOL "" FORCE)
+    
+    FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_ttf SDL2_mixer)
+    
+    # Create alias targets for consistency with find_package
+    if(NOT TARGET SDL2::SDL2)
+        add_library(SDL2::SDL2 ALIAS SDL2-static)
+    endif()
+    
+    if(NOT TARGET SDL2_image::SDL2_image)
+        add_library(SDL2_image::SDL2_image ALIAS SDL2_image)
+    endif()
+    
+    if(NOT TARGET SDL2_ttf::SDL2_ttf)
+        add_library(SDL2_ttf::SDL2_ttf ALIAS SDL2_ttf)
+    endif()
+    
+    if(NOT TARGET SDL2_mixer::SDL2_mixer)
+        add_library(SDL2_mixer::SDL2_mixer ALIAS SDL2_mixer)
+    endif()
 endif()
-
-
