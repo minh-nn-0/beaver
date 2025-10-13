@@ -56,14 +56,17 @@ void particle_emitter::auto_emit()
 
 void particle_emitter::manual_emit(int number, float x, float y, const particle_config& config)
 {
+	float x0 = 0, x1 = x, y0 = 0, y1 = y;
+	if (x1 < x0) std::swap(x0,x1);
+	if (y1 < y0) std::swap(y0,y1);
 	for (int i = 0; i!= number; i++)
 	{
-		std::uniform_real_distribution<float> positionx_dist{0.f, config._area.x},
-											  positiony_dist{0.f, config._area.y},
-											  speed_dist{config._speed_variation.x, config._speed_variation.y},
-											  size_dist{config._size_variation.x, config._size_variation.y},
-											  spread_dist{- config._spread / 2.f, config._spread/ 2.f};
-		float spread_angle = spread_dist(_re) + config._direction;
+		std::uniform_real_distribution<float> positionx_dist{x0,x1},
+											  positiony_dist{y0,y1},
+											  speed_dist{_config._speed_variation.x, _config._speed_variation.y},
+											  size_dist{_config._size_variation.x, _config._size_variation.y},
+											  spread_dist{- _config._spread / 2.f, _config._spread/ 2.f};
+		float spread_angle = spread_dist(_re) + _config._direction;
 
 
 		float size = size_dist(_re);
