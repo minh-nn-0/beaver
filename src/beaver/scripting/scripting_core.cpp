@@ -138,7 +138,7 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 					SDL_SetRenderTarget(game._graphics._rdr, game._assets.get_vec<sdl::texture>().at(textureid));
 			});
 
-	lua.set_function("SET_FULLSCREEN", [&](bool fc){SDL_SetWindowFullscreen(game._graphics._wd, fc);});
+	lua.set_function("SET_FULLSCREEN", [&](bool fc){SDL_SetWindowFullscreen(game._graphics._wd, fc ? SDL_WINDOW_FULLSCREEN_DESKTOP : fc);});
 	lua.set_function("SET_USING_CAM", [&](bool usingcam){game._graphics.set_cam(usingcam);});
 	lua.set_function("DRAW_POINT", [&](float x, float y)
 			{
