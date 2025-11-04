@@ -227,9 +227,10 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				else 
 					game._graphics.text_solid({x,y}, font, content, scale, wraplength, graphics::TEXT_ALIGNMENT::RIGHT);
 			});
-	lua.set_function("IMAGE_SIZE", [&](sdl::texture* tex)
+	lua.set_function("IMAGE_SIZE", [&](std::size_t img_id)
 			{
-				return std::make_pair(tex->_width, tex->_height);
+				const auto& tex = game._assets.get_vec<sdl::texture>().at(img_id);
+				return std::make_pair(tex._width, tex._height);
 			});
 
 
