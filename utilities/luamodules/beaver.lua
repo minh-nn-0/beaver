@@ -206,4 +206,7 @@ end
 function beaver.allocate_sound_channels(number)
 	ALLOCATE_CHANNELS(number)
 end
+function beaver.set_panning(channel, left, right)
+	return SET_PANNING(channel, left, right)
+end
 return beaver

@@ -302,6 +302,10 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				Mix_Volume(channel, volume);
 			});
+	lua.set_function("SET_PANNING", [&](int channel, int left, int right)
+			{
+				Mix_SetPanning(channel, left, right);
+			});
 };
 
 

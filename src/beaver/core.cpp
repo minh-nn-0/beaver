@@ -82,47 +82,60 @@ void beaver::run_game(sdlgame& game, const std::function<bool(float)>& updatef, 
 			float dt = game._fpstracker.elapsed_time_ms()/1000.f;
 
 			game._gametime += dt;
+#ifndef NDEBUG
+			// Save current logical size
+			int logicalW, logicalH;
+			SDL_RenderGetLogicalSize(game._graphics._rdr, &logicalW, &logicalH);
+			
+			// TEMPORARILY DISABLE logical size for ImGui
+			SDL_RenderSetLogicalSize(game._graphics._rdr, 0, 0);
+			
+			// Process SDL events normally
 			while (SDL_PollEvent(&sdlevent))
 			{
-#ifndef NDEBUG
 				ImGui_ImplSDL2_ProcessEvent(&sdlevent);
-#endif
 				game._ctl.update(sdlevent);
 				if (sdlevent.type == SDL_QUIT) 
 				{
-					//TODO: handle quit
 					loop_running = false;
 					game._running = false;
-				};
-			};
-
-
-#ifndef NDEBUG
-	        // Start the Dear ImGui frame
+				}
+			}
+			
+			// Start the Dear ImGui frame (now with logical size disabled)
 			ImGui_ImplSDLRenderer2_NewFrame();
 			ImGui_ImplSDL2_NewFrame();
 			ImGui::NewFrame();
-
+			// RESTORE logical size before game rendering
+			SDL_RenderSetLogicalSize(game._graphics._rdr, logicalW, logicalH);
+#else
+			while (SDL_PollEvent(&sdlevent))
+			{
+				game._ctl.update(sdlevent);
+				if (sdlevent.type == SDL_QUIT) 
+				{
+					loop_running = false;
+					game._running = false;
+				}
+			}
 #endif
-			// Normally, dt_ratio() will return 1, if lag, return > 1, if too fast, return < 1
-			// use dt_ratio in game logic is like "how many pixel a character move in one frame"
 			if (!updatef(dt)) loop_running = false;
-
+			
+			
 			drawf();
-
+			
 #ifndef NDEBUG
-			float sx, sy;
-			SDL_RenderGetScale(game._graphics._rdr, &sx, &sy);
-
+			// Disable logical size again for ImGui rendering
+			SDL_RenderSetLogicalSize(game._graphics._rdr, 0, 0);
+			
 			ImGuiIO& io = ImGui::GetIO();
-			SDL_RenderSetScale(game._graphics._rdr, io.DisplayFramebufferScale.x, io.DisplayFramebufferScale.y);
 			ImGui::Render();
 			ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), game._graphics._rdr);
-
-			SDL_RenderSetScale(game._graphics._rdr, sx, sy);
+			
+			SDL_RenderSetLogicalSize(game._graphics._rdr, logicalW, logicalH);
 #endif
-
-        	SDL_RenderPresent(game._graphics._rdr);
+			
+			SDL_RenderPresent(game._graphics._rdr);
 			
 			for (auto& [_,v]: game._ctl._keystate)
 				if (v > 0) v++;
