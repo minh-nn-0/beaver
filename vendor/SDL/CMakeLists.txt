@@ -66,20 +66,4 @@ else()
     
     FetchContent_MakeAvailable(SDL2 SDL2_image SDL2_ttf SDL2_mixer)
     
-    # Create alias targets for consistency with find_package
-    if(NOT TARGET SDL2::SDL2)
-        add_library(SDL2::SDL2 ALIAS SDL2-static)
-    endif()
-    
-    if(NOT TARGET SDL2_image::SDL2_image)
-        add_library(SDL2_image::SDL2_image ALIAS SDL2_image)
-    endif()
-    
-    if(NOT TARGET SDL2_ttf::SDL2_ttf)
-        add_library(SDL2_ttf::SDL2_ttf ALIAS SDL2_ttf)
-    endif()
-    
-    if(NOT TARGET SDL2_mixer::SDL2_mixer)
-        add_library(SDL2_mixer::SDL2_mixer ALIAS SDL2_mixer)
-    endif()
 endif()
