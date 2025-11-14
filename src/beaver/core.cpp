@@ -69,7 +69,7 @@ beaver::sdlgame::~sdlgame()
 //	}
 //};
 
-void beaver::run_game(sdlgame& game,
+void beaver::run_game(sdlgame& game, const std::function<void(SDL_Event* e)>& eventhandler,
                       const std::function<bool(float)>& updatef,
                       const std::function<void()>& drawf)
 {
@@ -110,6 +110,7 @@ void beaver::run_game(sdlgame& game,
             {
                 ImGui_ImplSDL2_ProcessEvent(&sdlevent);
                 game._ctl.update(sdlevent);
+				eventhandler(&sdlevent);
                 if (sdlevent.type == SDL_QUIT) 
                 {
                     loop_running = false;
@@ -126,7 +127,7 @@ void beaver::run_game(sdlgame& game,
             while (SDL_PollEvent(&sdlevent))
             {
                 game._ctl.update(sdlevent);
-                if (sdlevent.type == SDL_QUIT) 
+                if (sdlevent->type == SDL_QUIT) 
                 {
                     loop_running = false;
                     game._running = false;

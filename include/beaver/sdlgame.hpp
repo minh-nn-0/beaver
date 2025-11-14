@@ -49,7 +49,9 @@ namespace beaver
 		};
 		// SDL
 	};
-	void run_game(sdlgame&, const std::function<bool(float)>& updatef, const std::function<void()>& drawf);
+	void run_game(sdlgame& game, const std::function<void(SDL_Event* e)>& _eventhandler,
+                      const std::function<bool(float)>& updatef,
+                      const std::function<void()>& drawf);
 
 	void init_imgui(SDL_Window* wd, SDL_Renderer* rdr);
 	void shutdown_imgui();
