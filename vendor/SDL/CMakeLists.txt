@@ -8,7 +8,7 @@ if(USE_SYSTEM_SDL)
     find_package(SDL2_image REQUIRED)
     find_package(SDL2_ttf REQUIRED)
     find_package(SDL2_mixer REQUIRED)
-else()
+elseif(NOT USE_SOURCE_SDL)
     message(STATUS "Building SDL2 libraries from source...")
     
 	# Prevent SDL from installing system-wide

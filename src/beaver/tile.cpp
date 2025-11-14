@@ -28,7 +28,7 @@ drawdata ddata_from_json(const nlohmann::json& j)
 	return rs;
 };
 
-std::string loadlayer(const nlohmann::json& tmj, const std::string& parent_name, tilemap::layer_manager& layers)
+std::string beaver::tile::loadlayer(const nlohmann::json& tmj, const std::string& parent_name, tilemap::layer_manager& layers)
 {
 	layer_t rs;
 	rs._drawdata = ddata_from_json(tmj);

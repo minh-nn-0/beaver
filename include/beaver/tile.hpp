@@ -108,6 +108,7 @@ namespace beaver::tile
 		};
 	};
 	
+	std::string loadlayer(const nlohmann::json& tmj, const std::string& parent_name, tilemap::layer_manager& layers);
 
 	void load_textures(tilemap&, std::vector<sdl::texture>& textures);
 };

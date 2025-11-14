@@ -68,82 +68,200 @@ beaver::sdlgame::~sdlgame()
 //
 //	}
 //};
-void beaver::run_game(sdlgame& game, const std::function<bool(float)>& updatef, const std::function<void()>& drawf)
+
+void beaver::run_game(sdlgame& game,
+                      const std::function<bool(float)>& updatef,
+                      const std::function<void()>& drawf)
 {
-	game._fpstracker.reset();
-	
-	SDL_Event sdlevent;
-	bool loop_running {true};
+    game._fpstracker.reset();
+    
+    SDL_Event sdlevent;
+    bool loop_running {true};
 
-	while (loop_running)
-	{
-		if (game._fpstracker.new_frame_should_start())
-		{
-			float dt = game._fpstracker.elapsed_time_ms()/1000.f;
+#ifdef USE_VIRTUAL_RENDER_TARGET
+    // Virtual resolution (your camera / game coordinate system)
+    static int virtual_w = 320;
+    static int virtual_h = 180;
 
-			game._gametime += dt;
+    if (!game._graphics._vrendertarget)
+    {
+        game._graphics._vrendertarget = SDL_CreateTexture(game._graphics._rdr,
+                                        SDL_PIXELFORMAT_RGBA8888,
+                                        SDL_TEXTUREACCESS_TARGET,
+                                        virtual_w, virtual_h);
+        SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
+    }
+#endif
+
+    while (loop_running)
+    {
+        if (game._fpstracker.new_frame_should_start())
+        {
+            float dt = game._fpstracker.elapsed_time_ms()/1000.f;
+            game._gametime += dt;
+
+            // --- Event handling ---
 #ifndef NDEBUG
-			// Save current logical size
-			int logicalW, logicalH;
-			SDL_RenderGetLogicalSize(game._graphics._rdr, &logicalW, &logicalH);
-			
-			// TEMPORARILY DISABLE logical size for ImGui
-			SDL_RenderSetLogicalSize(game._graphics._rdr, 0, 0);
-			
-			// Process SDL events normally
-			while (SDL_PollEvent(&sdlevent))
-			{
-				ImGui_ImplSDL2_ProcessEvent(&sdlevent);
-				game._ctl.update(sdlevent);
-				if (sdlevent.type == SDL_QUIT) 
-				{
-					loop_running = false;
-					game._running = false;
-				}
-			}
-			
-			// Start the Dear ImGui frame (now with logical size disabled)
-			ImGui_ImplSDLRenderer2_NewFrame();
-			ImGui_ImplSDL2_NewFrame();
-			ImGui::NewFrame();
-			// RESTORE logical size before game rendering
-			SDL_RenderSetLogicalSize(game._graphics._rdr, logicalW, logicalH);
+            int logicalW, logicalH;
+            SDL_RenderGetLogicalSize(game._graphics._rdr, &logicalW, &logicalH);
+            SDL_RenderSetLogicalSize(game._graphics._rdr, 0, 0);
+
+            while (SDL_PollEvent(&sdlevent))
+            {
+                ImGui_ImplSDL2_ProcessEvent(&sdlevent);
+                game._ctl.update(sdlevent);
+                if (sdlevent.type == SDL_QUIT) 
+                {
+                    loop_running = false;
+                    game._running = false;
+                }
+            }
+
+            ImGui_ImplSDLRenderer2_NewFrame();
+            ImGui_ImplSDL2_NewFrame();
+            ImGui::NewFrame();
+
+            SDL_RenderSetLogicalSize(game._graphics._rdr, logicalW, logicalH);
 #else
-			while (SDL_PollEvent(&sdlevent))
-			{
-				game._ctl.update(sdlevent);
-				if (sdlevent.type == SDL_QUIT) 
-				{
-					loop_running = false;
-					game._running = false;
-				}
-			}
+            while (SDL_PollEvent(&sdlevent))
+            {
+                game._ctl.update(sdlevent);
+                if (sdlevent.type == SDL_QUIT) 
+                {
+                    loop_running = false;
+                    game._running = false;
+                }
+            }
 #endif
-			if (!updatef(dt)) loop_running = false;
-			
-			
-			drawf();
-			
+
+            if (!updatef(dt)) loop_running = false;
+
+            // --- Draw to virtual texture if macro enabled ---
+#ifdef USE_VIRTUAL_RENDER_TARGET
+            SDL_SetRenderTarget(game._graphics._rdr, game._graphics._vrendertarget);
+#endif
+            drawf();
+#ifdef USE_VIRTUAL_RENDER_TARGET
+            SDL_SetRenderTarget(game._graphics._rdr, NULL);
+
+            // Scale virtual texture to screen
+            int win_w, win_h;
+            SDL_GetRendererOutputSize(game._graphics._rdr, &win_w, &win_h);
+
+            float scale_x = float(win_w) / virtual_w;
+            float scale_y = float(win_h) / virtual_h;
+
+#ifdef USE_INTEGER_SCALE
+            float scale = floor((scale_x < scale_y) ? scale_x : scale_y);
+#else
+            float scale = (scale_x < scale_y) ? scale_x : scale_y;
+#endif
+
+            SDL_Rect dst;
+            dst.w = int(virtual_w * scale);
+            dst.h = int(virtual_h * scale);
+            dst.x = (win_w - dst.w) / 2;
+            dst.y = (win_h - dst.h) / 2;
+
+            SDL_RenderCopy(game._graphics._rdr, game._graphics._vrendertarget, NULL, &dst);
+#endif
+
 #ifndef NDEBUG
-			// Disable logical size again for ImGui rendering
-			SDL_RenderSetLogicalSize(game._graphics._rdr, 0, 0);
-			
-			ImGuiIO& io = ImGui::GetIO();
-			ImGui::Render();
-			ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), game._graphics._rdr);
-			
-			SDL_RenderSetLogicalSize(game._graphics._rdr, logicalW, logicalH);
+            SDL_RenderSetLogicalSize(game._graphics._rdr, 0, 0);
+            ImGuiIO& io = ImGui::GetIO();
+            ImGui::Render();
+            ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), game._graphics._rdr);
+            SDL_RenderSetLogicalSize(game._graphics._rdr, logicalW, logicalH);
 #endif
-			
-			SDL_RenderPresent(game._graphics._rdr);
-			
-			for (auto& [_,v]: game._ctl._keystate)
-				if (v > 0) v++;
 
-			game._fpstracker.end_frame();
-		};
-	};
+            SDL_RenderPresent(game._graphics._rdr);
 
-	std::println("exiting gameloop");
-};
+            for (auto& [_,v]: game._ctl._keystate)
+                if (v > 0) v++;
+
+            game._fpstracker.end_frame();
+        };
+    }
+
+    std::println("exiting gameloop");
+}
+
+//void beaver::run_game(sdlgame& game, const std::function<bool(float)>& updatef, const std::function<void()>& drawf)
+//{
+//	game._fpstracker.reset();
+//	
+//	SDL_Event sdlevent;
+//	bool loop_running {true};
+//
+//	while (loop_running)
+//	{
+//		if (game._fpstracker.new_frame_should_start())
+//		{
+//			float dt = game._fpstracker.elapsed_time_ms()/1000.f;
+//
+//			game._gametime += dt;
+//#ifndef NDEBUG
+//			// Save current logical size
+//			int logicalW, logicalH;
+//			SDL_RenderGetLogicalSize(game._graphics._rdr, &logicalW, &logicalH);
+//			
+//			// TEMPORARILY DISABLE logical size for ImGui
+//			SDL_RenderSetLogicalSize(game._graphics._rdr, 0, 0);
+//			
+//			// Process SDL events normally
+//			while (SDL_PollEvent(&sdlevent))
+//			{
+//				ImGui_ImplSDL2_ProcessEvent(&sdlevent);
+//				game._ctl.update(sdlevent);
+//				if (sdlevent.type == SDL_QUIT) 
+//				{
+//					loop_running = false;
+//					game._running = false;
+//				}
+//			}
+//			
+//			// Start the Dear ImGui frame (now with logical size disabled)
+//			ImGui_ImplSDLRenderer2_NewFrame();
+//			ImGui_ImplSDL2_NewFrame();
+//			ImGui::NewFrame();
+//			// RESTORE logical size before game rendering
+//			SDL_RenderSetLogicalSize(game._graphics._rdr, logicalW, logicalH);
+//#else
+//			while (SDL_PollEvent(&sdlevent))
+//			{
+//				game._ctl.update(sdlevent);
+//				if (sdlevent.type == SDL_QUIT) 
+//				{
+//					loop_running = false;
+//					game._running = false;
+//				}
+//			}
+//#endif
+//			if (!updatef(dt)) loop_running = false;
+//			
+//			
+//			drawf();
+//			
+//#ifndef NDEBUG
+//			// Disable logical size again for ImGui rendering
+//			SDL_RenderSetLogicalSize(game._graphics._rdr, 0, 0);
+//			
+//			ImGuiIO& io = ImGui::GetIO();
+//			ImGui::Render();
+//			ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), game._graphics._rdr);
+//			
+//			SDL_RenderSetLogicalSize(game._graphics._rdr, logicalW, logicalH);
+//#endif
+//			
+//			SDL_RenderPresent(game._graphics._rdr);
+//			
+//			for (auto& [_,v]: game._ctl._keystate)
+//				if (v > 0) v++;
+//
+//			game._fpstracker.end_frame();
+//		};
+//	};
+//
+//	std::println("exiting gameloop");
+//};
 

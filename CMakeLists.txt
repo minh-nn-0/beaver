@@ -45,5 +45,13 @@ if (EMSCRIPTEN)
 endif()
 #set(CMAKE_CXX_FLAGS "-O3 -Wall -Wextra") #Stimulate release mode, does work
 
+if(USE_VIRTUAL_RENDER_TARGET)
+	target_compile_definitions(beaver PUBLIC USE_VIRTUAL_RENDER_TARGET)
+endif()
+if(USE_INTEGER_SCALE)
+	target_compile_definitions(beaver PUBLIC USE_INTEGER_SCALE)
+endif()
 
-add_subdirectory(test EXCLUDE_FROM_ALL)
+if(BEAVER_BUILD_TEST)
+	add_subdirectory(test EXCLUDE_FROM_ALL)
+endif()

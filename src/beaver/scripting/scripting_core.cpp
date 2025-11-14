@@ -133,7 +133,11 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 	lua.set_function("SET_RENDER_TARGET", [&](std::size_t textureid)
 			{
 				if (textureid == -1)
+#ifdef USE_VIRTUAL_RENDER_TARGET
+					SDL_SetRenderTarget(game._graphics._rdr, game._graphics._vrendertarget);
+#else
 					SDL_SetRenderTarget(game._graphics._rdr, nullptr);
+#endif
 				else
 					SDL_SetRenderTarget(game._graphics._rdr, game._assets.get_vec<sdl::texture>().at(textureid));
 			});

@@ -20,6 +20,9 @@ namespace beaver
 		graphics(SDL_Window*, SDL_Renderer*, camera2D* = nullptr);
 		SDL_Window* _wd;
 		SDL_Renderer* _rdr;
+#ifdef USE_VIRTUAL_RENDER_TARGET
+		SDL_Texture* _vrendertarget = nullptr;
+#endif
 		
 		camera2D* _cam {nullptr};
 
