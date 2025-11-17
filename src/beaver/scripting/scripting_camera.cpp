@@ -15,6 +15,7 @@ void beaver::scripting::bind_camera(camera2D& cam, sol::table& tbl)
 			{
 				return std::make_tuple(cam._view._pos.x, cam._view._pos.y, cam._view._size.x, cam._view._size.y);
 			});
+	tbl.set_function("set_cam_dimension",[&](float x, float y){cam._view._size = {x,y};});
 	tbl.set_function("get_cam_zoom", [&]()
 			{
 				return cam._zoom;
