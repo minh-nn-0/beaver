@@ -164,7 +164,7 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 	lua.set_function("DRAW_TEXTURE", [&](std::size_t index, const sol::table& param)
 			{
 				auto& tex = game._assets.get_vec<sdl::texture>().at(index);
-				double angle = param["angle"].get_or(0);
+				double angle = param["angle"].get_or(0.f);
 				unsigned flipflag = param["flipflag"].get_or(0);
 				
 				mmath::frect dst {0,0,0,0}, src {0,0,0,0};
