@@ -15,12 +15,15 @@ namespace beaver
 
 		void target(const mmath::fvec2& target, float dt)
 		{
+			mmath::fvec2 itarget = mmath::fvec2{std::round(target.x), std::round(target.y)}; 
 			// TODO _zoom factor is troublesome
-			mmath::fvec2 destination = (target - _view._size / 2.f / _zoom + _offset) - _view._pos; 
+			mmath::fvec2 destination = (itarget - _view._size / 2.f / _zoom + _offset) - _view._pos; 
 			//TODO translate cam pos to destination
 			
 			//DOne that day <---- actually not
-			_view._pos += destination * _smooth_speed * dt;
+			if (_view._pos.distance(destination) > 0.5)
+				_view._pos += destination * _smooth_speed * dt;
+			else _view._pos = destination;
 		};
 
 		mmath::fvec2 center()

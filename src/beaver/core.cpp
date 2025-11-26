@@ -79,12 +79,17 @@ void beaver::run_game(sdlgame& game, const std::function<void(SDL_Event* e)>& ev
     bool loop_running {true};
 
 #ifdef USE_VIRTUAL_RENDER_TARGET
-    // Virtual resolution (your camera / game coordinate system)
-    static int virtual_w = 320;
-    static int virtual_h = 180;
-
+    static int virtual_w;
+    static int virtual_h;
     if (!game._graphics._vrendertarget)
     {
+        int logicalW, logicalH;
+        SDL_RenderGetLogicalSize(game._graphics._rdr, &logicalW, &logicalH);
+        int winw, winh;
+        SDL_GetRendererOutputSize(game._graphics._rdr, &winw, &winh);
+        virtual_w = logicalW == 0 ? winw : logicalW ;
+        virtual_h = logicalH == 0 ? winh : logicalH;
+
         game._graphics._vrendertarget = SDL_CreateTexture(game._graphics._rdr,
                                         SDL_PIXELFORMAT_RGBA8888,
                                         SDL_TEXTUREACCESS_TARGET,

@@ -71,6 +71,10 @@ namespace mmath
 		
 		auto operator <=> (const vec2&) const = default;
 		
+		UnitT distance(vec2<UnitT> v)
+		{
+			return std::sqrt(std::pow((v.x - x),2) + std::pow((v.y - y),2));
+		};
 		template<typename T>
 		operator vec2<T>() const
 		{
