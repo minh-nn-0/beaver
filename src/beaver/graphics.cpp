@@ -176,6 +176,12 @@ void beaver::graphics::texture(const sdl::texture& tex,
 	};
 	SDL_Rect* sdlsrc = sdlsrc_.w == 0 ? nullptr : &sdlsrc_; 
 	SDL_FRect* sdldst = sdldst_.w == 0 ? nullptr : &sdldst_; 
+
+	if (sdldst)
+	{
+		sdldst->x = std::round(sdldst->x);
+		sdldst->y = std::round(sdldst->y);
+	};
 	SDL_FPoint p;
 	p.x = pivot.x;
 	p.y = pivot.y;
@@ -259,6 +265,9 @@ void draw_layers(const tiled::layer& layer,
 					};
 					//dst._pos.x -= cam._view._pos.x * parallax.x - offset.x;
 					//dst._pos.y -= cam._view._pos.y * parallax.y - offset.y;
+
+					dst._pos.x = std::round(dst._pos.x);
+					dst._pos.y = std::round(dst._pos.y);
 					
 					graphic.texture(*ts_tex, dst, src, flipflag);
 					

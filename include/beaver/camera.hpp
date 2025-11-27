@@ -21,9 +21,7 @@ namespace beaver
 			//TODO translate cam pos to destination
 			
 			//DOne that day <---- actually not
-			if (_view._pos.distance(destination) > 0.5)
-				_view._pos += destination * _smooth_speed * dt;
-			else _view._pos = destination;
+			_view._pos += destination * _smooth_speed * dt;
 		};
 
 		mmath::fvec2 center()
