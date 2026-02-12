@@ -198,9 +198,20 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			});
 	
 
-	lua.set_function("SET_FONT_SIZE", [&](sdl::font* font, int size)
+	lua.set_function("SET_FONT_SIZE", [&](std::size_t fontid, int size)
 			{
-				TTF_SetFontSize(*font, size);
+				auto& font = game._assets.get_vec<sdl::font>().at(fontid);
+				TTF_SetFontSize(&*font, size);
+			});
+	lua.set_function("SET_FONT_OUTLINE", [&](std::size_t fontid, int size)
+			{
+				auto& font = game._assets.get_vec<sdl::font>().at(fontid);
+				TTF_SetFontOutline(&*font, size);
+			});
+	lua.set_function("SET_FONT_STYLE", [&](std::size_t fontid, int style)
+			{
+				auto& font = game._assets.get_vec<sdl::font>().at(fontid);
+				TTF_SetFontStyle(&*font, style);
 			});
 	// Draw using topleft
 	lua.set_function("DRAW_TEXT", [&](float x, float y, std::size_t fontid, float scale,

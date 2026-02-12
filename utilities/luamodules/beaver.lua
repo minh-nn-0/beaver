@@ -5,6 +5,11 @@ beaver.FLIP_V = FLIP_V
 beaver.FLIP_NONE = FLIP_NONE
 beaver.TILED_FLIP_H = TILED_FLIP_H
 beaver.TILED_FLIP_V = TILED_FLIP_V
+beaver.font_style_normal        = 0x00
+beaver.font_style_bold          = 0x01
+beaver.font_style_italic        = 0x02
+beaver.font_style_underline     = 0x04
+beaver.font_style_strikethrough = 0x08
 --- @param path string
 function beaver.new_image(path)
 	return NEW_IMAGE(path)
@@ -75,6 +80,12 @@ end
 
 function beaver.set_font_size(font, size)
 	SET_FONT_SIZE(font, size)
+end
+function beaver.set_font_outline(font, size)
+	SET_FONT_OUTLINE(font, size)
+end
+function beaver.set_font_style(font, size)
+	SET_FONT_STYLE(font, size)
 end
 function beaver.draw_text(x, y, font, scale, content, wraplength, blended)
 	DRAW_TEXT(x,y,font, scale, content, wraplength or 0, blended or false)
