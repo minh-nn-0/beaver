@@ -51,6 +51,12 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				return game._ctl._keystate[KEYMAP.at(keyname)];
 			});
+    lua.set_function("GET_MOUSE", [&]() -> std::pair<int, int>
+            {
+                int x,y;
+                SDL_GetMouseState(&x, &y);
+                return std::make_pair(x,y);
+            });
 	// RENDERING
 	
 	lua["FLIP_NONE"] = SDL_FLIP_NONE;

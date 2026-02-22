@@ -36,6 +36,10 @@ function beaver.get_input(keyname)
 	return GET_INPUT(keyname)
 end
 
+function beaver.get_mouse()
+	return GET_MOUSE()
+end
+
 function beaver.get_elapsed_time()
 	return GET_ELAPSED_TIME()
 end
