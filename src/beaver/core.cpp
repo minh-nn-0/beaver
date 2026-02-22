@@ -185,6 +185,9 @@ void beaver::run_game(sdlgame& game, const std::function<void(SDL_Event* e)>& ev
             for (auto& [_,v]: game._ctl._keystate)
                 if (v > 0) v++;
 
+            if (game._ctl._mousestate.first > 0) game._ctl._mousestate.first++;
+            if (game._ctl._mousestate.second > 0) game._ctl._mousestate.second++;
+
             game._fpstracker.end_frame();
         };
     }

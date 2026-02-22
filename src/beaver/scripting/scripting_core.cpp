@@ -51,11 +51,15 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				return game._ctl._keystate[KEYMAP.at(keyname)];
 			});
-    lua.set_function("GET_MOUSE", [&]() -> std::pair<int, int>
+    lua.set_function("GET_MOUSE_POS", [&]() -> std::pair<int, int>
             {
                 int x,y;
                 SDL_GetMouseState(&x, &y);
                 return std::make_pair(x,y);
+            });
+    lua.set_function("GET_MOUSE_INPUT", [&]() -> std::pair<int, int>
+            {
+                return game._ctl._mousestate;
             });
 	// RENDERING
 	
@@ -64,6 +68,8 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 	lua["FLIP_V"] = SDL_FLIP_VERTICAL;
 	lua["TILED_FLIP_V"] = tiled::TILED_FLIPFLAG_V;
 	lua["TILED_FLIP_H"] = tiled::TILED_FLIPFLAG_H;
+	lua["MOUSEL"] = SDL_BUTTON_LMASK;
+	lua["MOUSER"] = SDL_BUTTON_RMASK;
 	lua.set_function("CLS", [&]{ SDL_RenderClear(game._graphics._rdr);});
 	lua.set_function("CLS", [&]{ SDL_RenderClear(game._graphics._rdr);});
 	lua.set_function("SET_DRAW_COLOR", 
@@ -229,6 +235,14 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 				else 
 					game._graphics.text_solid({x,y}, font, content, scale, wraplength);
 			});
+    lua.set_function("GET_TEXT_SIZE", [&](const std::string& content, std::size_t fontid) -> std::pair<int,int>
+            {
+                int x,y;
+				auto& font = game._assets.get_vec<sdl::font>().at(fontid);
+                
+                TTF_SizeUTF8(font, content.c_str(), &x, &y); 
+                return std::make_pair(x,y);
+            });
 	// draw using center
 	lua.set_function("DRAW_TEXT_CENTERED", [&](float x, float y, std::size_t fontid, float scale,
 				const std::string& content, int wraplength, bool blended)

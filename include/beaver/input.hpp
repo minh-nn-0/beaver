@@ -9,14 +9,26 @@ namespace beaver
 	struct controller
 	{
 		std::unordered_map<unsigned, int> _keystate;
+        std::pair<int, int> _mousestate;
 		void update(const SDL_Event& e) 
 		{
 			// process input
-			if (e.type == SDL_KEYDOWN && e.key.repeat == 0)
-				_keystate[e.key.keysym.sym] = 1;
-			if (e.type == SDL_KEYUP)
-				_keystate[e.key.keysym.sym] = 0;
-
+            if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {_keystate[e.key.keysym.sym] = 1;}
+            else if (e.type == SDL_KEYUP) {_keystate[e.key.keysym.sym] = 0;}
+            else if (e.type == SDL_MOUSEBUTTONDOWN)
+            {
+                if (e.button.button == SDL_BUTTON_LEFT)
+                    _mousestate.first = 1;
+                if (e.button.button == SDL_BUTTON_RIGHT)
+                    _mousestate.second = 1;
+            }
+            else if (e.type == SDL_MOUSEBUTTONUP)
+            {
+                if (e.button.button == SDL_BUTTON_LEFT)
+                    _mousestate.first = 0;
+                if (e.button.button == SDL_BUTTON_RIGHT)
+                    _mousestate.second = 0;
+            };
 		};
 	};
 

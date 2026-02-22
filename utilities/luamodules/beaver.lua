@@ -36,8 +36,12 @@ function beaver.get_input(keyname)
 	return GET_INPUT(keyname)
 end
 
-function beaver.get_mouse()
-	return GET_MOUSE()
+function beaver.get_mouse_pos()
+	return GET_MOUSE_POS()
+end
+
+function beaver.get_mouse_input()
+	return GET_MOUSE_INPUT()
 end
 
 function beaver.get_elapsed_time()
@@ -90,6 +94,9 @@ function beaver.set_font_outline(font, size)
 end
 function beaver.set_font_style(font, size)
 	SET_FONT_STYLE(font, size)
+end
+function beaver.get_text_size(content, font)
+    return GET_TEXT_SIZE(content, font)
 end
 function beaver.draw_text(x, y, font, scale, content, wraplength, blended)
 	DRAW_TEXT(x,y,font, scale, content, wraplength or 0, blended or false)
