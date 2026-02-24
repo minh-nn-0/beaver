@@ -9,7 +9,7 @@
 #include <headeronly/json.hpp>
 #include <mmath/core.hpp>
 #include <utilities.hpp>
-
+#include <cstdint>
 namespace tiled
 {
 	template<typename T>
@@ -25,7 +25,7 @@ namespace tiled
 
 	constexpr unsigned TILED_FLIPFLAG_MASK = TILED_FLIPFLAG_H | TILED_FLIPFLAG_V | TILED_FLIPFLAG_D;
 
-	constexpr std::pair<unsigned, int> get_flipflags (const long& id)
+	constexpr std::pair<unsigned, int> get_flipflags (const uint32_t& id)
 	{
 		unsigned flags {0};
 		if (id & TILED_FLIPFLAG_H) flags |= 0x00000001;

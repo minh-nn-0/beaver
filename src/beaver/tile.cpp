@@ -40,9 +40,7 @@ std::string beaver::tile::loadlayer(const nlohmann::json& tmj, const std::string
 	if (ltype == "tilelayer")
 	{
 		tilelayer tl;
-		std::ranges::transform(static_cast<std::vector<long>>(tmj.at("data")),
-								std::back_inserter(tl._data),
-								[](long id){return --id;});
+		tl._data = static_cast<std::vector<uint32_t>>(tmj.at("data"));
 		rs._data = tl;
 		layers.second.emplace_back(rs);
 		layers.first.emplace(lname, layers.second.size() - 1);

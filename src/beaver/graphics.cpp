@@ -304,9 +304,11 @@ void draw_tilelayer(const tilelayer& tl,
 	auto [parallax, offset, tint] = ddata;
 	for (int i = 0; i != tl._data.size(); i++)
 	{
-		if (long tile = tl._data.at(i); tile >= 0)
+		if (uint32_t tile = tl._data.at(i); tile > 0)
 		{
 			auto [flipflag, tileid] = tiled::get_flipflags(tile);
+
+			tileid--;
 
 			const tileset& ts = tm.tileset_at(tileid); 
 			const sdl::texture& ts_tex = textures.at(ts._textureid);

@@ -8,6 +8,7 @@
 #include <headeronly/json.hpp>
 #include <headeronly/sol/sol.hpp>
 #include <sdlwrapper/sdlwrapper.hpp>
+#include <cstdint>
 namespace beaver::tile
 {
 	constexpr int get_tile_number(int tilex, int tiley, int mapwidth, int mapheight)
@@ -46,7 +47,7 @@ namespace beaver::tile
 	};
 	struct tilelayer
 	{
-		std::vector<long> _data;
+		std::vector<uint32_t> _data;
 	};
 
 	struct image_layer
