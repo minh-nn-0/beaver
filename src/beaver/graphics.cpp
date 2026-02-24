@@ -308,8 +308,6 @@ void draw_tilelayer(const tilelayer& tl,
 		{
 			auto [flipflag, tileid] = tiled::get_flipflags(tile);
 
-			tileid--;
-
 			const tileset& ts = tm.tileset_at(tileid); 
 			const sdl::texture& ts_tex = textures.at(ts._textureid);
 			SDL_SetTextureAlphaMod(ts_tex, tint[3]);
