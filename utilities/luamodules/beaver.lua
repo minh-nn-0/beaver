@@ -151,10 +151,10 @@ function beaver.get_render_output_size()
 	return GET_RENDER_OUTPUT_SIZE()
 end
 function beaver.create_texture_for_drawing(width, height)
-	local w,h = GET_RENDER_OUTPUT_SIZE()
-	width = width and width or w
-	height = height and height or h
-	return CREATE_TEXTURE_FOR_DRAWING(width, height)
+	local ww,wh = GET_RENDER_OUTPUT_SIZE()
+    local w = width and width or ww
+	local h = height and height or wh
+	return CREATE_TEXTURE_FOR_DRAWING(w, h)
 end
 
 function beaver.set_render_target(target)
