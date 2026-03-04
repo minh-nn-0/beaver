@@ -132,6 +132,7 @@ void beaver::run_game(sdlgame& game, const std::function<void(SDL_Event* e)>& ev
             while (SDL_PollEvent(&sdlevent))
             {
                 game._ctl.update(sdlevent);
+				eventhandler(&sdlevent);
                 if (sdlevent.type == SDL_QUIT) 
                 {
                     loop_running = false;
