@@ -271,7 +271,16 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 
 	lua.set_function("PLAY_SOUND", [&](std::size_t soundid, int channel, int loop)
 			{
-				return Mix_PlayChannel(channel, game._assets.get_vec<sdl::soundchunk>().at(soundid), loop);
+                Mix_Chunk* chunk = game._assets.get_vec<sdl::soundchunk>().at(soundid);
+
+                //printf("%p, alen: %u, abuf: %p, volume: %d, allocated: %d\n",
+                //(void*)chunk,
+                //chunk->alen,
+                //(void*)chunk->abuf,
+                //chunk->volume,
+                //chunk->allocated);
+                //printf("allocated channels: %d\n", Mix_AllocateChannels(-1));
+				return Mix_PlayChannel(channel, chunk, loop);
 			});
 	lua.set_function("PAUSE_CHANNEL", [&](int channel)
 			{
@@ -331,15 +340,19 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			});
 	lua.set_function("SET_VOLUME_SOUND", [&](std::size_t soundid, int volume)
 			{
-				Mix_VolumeChunk(game._assets.get_vec<sdl::soundchunk>().at(soundid), volume);
+				return Mix_VolumeChunk(game._assets.get_vec<sdl::soundchunk>().at(soundid), volume);
 			});
 	lua.set_function("SET_VOLUME_CHANNEL", [&](int channel, int volume)
 			{
-				Mix_Volume(channel, volume);
+				return Mix_Volume(channel, volume);
 			});
 	lua.set_function("SET_PANNING", [&](int channel, int left, int right)
 			{
 				Mix_SetPanning(channel, left, right);
+			});
+	lua.set_function("COUNT_CHANNEL", [&]()
+			{
+				return Mix_Playing(-1);
 			});
 };
 

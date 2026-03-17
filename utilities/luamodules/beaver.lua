@@ -220,10 +220,10 @@ function beaver.set_volume_music(volume)
 	SET_VOLUME_MUSIC(volume)
 end
 function beaver.set_volume_sound(sound, volume)
-	SET_VOLUME_SOUND(sound, volume)
+	return SET_VOLUME_SOUND(sound, volume)
 end
 function beaver.set_volume_channel(channel, volume)
-	SET_VOLUME_CHANNEL(channel, volume)
+	return SET_VOLUME_CHANNEL(channel, volume)
 end
 function beaver.allocate_sound_channels(number)
 	ALLOCATE_CHANNELS(number)

@@ -12,7 +12,7 @@ void sdl::init_sdl(const char* title, int w, int h, SDL_Window** wd, SDL_Rendere
 	if (!*rdr) std::cerr << "failed to create renderer" << SDL_GetError() << '\n';
 	
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
-	Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 1024);
+	Mix_OpenAudio(48000, MIX_DEFAULT_FORMAT, 2, 2048);
 	TTF_Init();
 };
 sdl::app::app(const char* title, int w, int h)
