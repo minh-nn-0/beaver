@@ -49,7 +49,7 @@ beaver::sdlgame::~sdlgame()
 	shutdown_imgui();
 #endif
 	_assets = {}; // cleanup assets
-	std::println("Destroy window and renderer");
+	SDL_Log("Destroy window and renderer");
 	SDL_DestroyWindow(_graphics._wd);
 	SDL_DestroyRenderer(_graphics._rdr);
 	TTF_Quit();
@@ -193,7 +193,7 @@ void beaver::run_game(sdlgame& game, const std::function<void(SDL_Event* e)>& ev
         };
     }
 
-    std::println("exiting gameloop");
+    SDL_Log("exiting gameloop");
 }
 
 //void beaver::run_game(sdlgame& game, const std::function<bool(float)>& updatef, const std::function<void()>& drawf)
@@ -272,6 +272,6 @@ void beaver::run_game(sdlgame& game, const std::function<void(SDL_Event* e)>& ev
 //		};
 //	};
 //
-//	std::println("exiting gameloop");
+//	SDL_Log("exiting gameloop");
 //};
 

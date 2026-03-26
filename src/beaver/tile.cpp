@@ -84,10 +84,8 @@ auto print_drawdata = [](auto&& arg)
 
 void printlayers(const tilemap::layer_manager& layers) {
     static int level = 0;
-
     for (size_t i = 0; i < layers.second.size(); ++i) {
         const auto& layer = layers.second[i];
-
         // Reverse lookup for the layer name
         std::string lname;
         for (const auto& [name, index] : layers.first) {
@@ -96,38 +94,36 @@ void printlayers(const tilemap::layer_manager& layers) {
                 break;
             }
         }
-
         if (lname.empty()) {
-            std::cerr << "Error: Layer name not found for index " << i << '\n';
+            SDL_Log("Error: Layer name not found for index %zu", i);
             continue;
         }
 
-        if (std::holds_alternative<tilelayer>(layer._data)) {
-            std::cout << std::string(level, '\t') 
-                      << lname << '\t' 
-                      << "type = tilelayer\t" 
-                      << print_drawdata(layer) 
-                      << '\n';
-        }
+        std::string indent(level, '\t');
 
+        if (std::holds_alternative<tilelayer>(layer._data)) {
+            SDL_Log("%s%s\ttype = tilelayer\t%s",
+                indent.c_str(),
+                lname.c_str(),
+                print_drawdata(layer).c_str());
+        }
         if (std::holds_alternative<image_layer>(layer._data)) {
-            std::cout << std::string(level, '\t') 
-                      << lname << '\t' 
-                      << "type = image\t" 
-                      << print_drawdata(layer) << '\t'
-					  << std::get<image_layer>(layer._data)._imgname
-                      << '\n';
+            SDL_Log("%s%s\ttype = image\t%s\t%s",
+                indent.c_str(),
+                lname.c_str(),
+                print_drawdata(layer).c_str(),
+                std::get<image_layer>(layer._data)._imgname.c_str());
         }
         if (std::holds_alternative<group>(layer._data)) {
-            std::cout << std::string(level, '\t') 
-                      << lname << '\t' 
-                      << "type = group\t" 
-                      << print_drawdata(layer) 
-                      << '\n';
-			std::println("gr layer");
-			for (auto& l: std::get<group>(layer._data)._layers)
-				std::print("{} ", l);
-			std::println("");
+            SDL_Log("%s%s\ttype = group\t%s",
+                indent.c_str(),
+                lname.c_str(),
+                print_drawdata(layer).c_str());
+
+            std::string group_layers;
+            for (const auto& l : std::get<group>(layer._data)._layers)
+                group_layers += l + " ";
+            SDL_Log("%s", group_layers.c_str());
         }
     }
 }
@@ -152,7 +148,7 @@ beaver::tile::tilemap::tilemap(const std::filesystem::path& path)
 		nlohmann::json tsj;
 		f.open(path.parent_path() / std::filesystem::path(ts.at("source")).filename());
 		f >> tsj;
-		std::println("{}",std::filesystem::path(tsj.at("image")).filename().string());
+		SDL_Log("%s",std::filesystem::path(tsj.at("image")).filename().string().c_str());
 		_tilesets.emplace(static_cast<int>(ts["firstgid"]) - 1, 
 						tileset{._filename = std::filesystem::path(tsj.at("image")).filename().string(),
 								._tilesize = tsj["tilewidth"],

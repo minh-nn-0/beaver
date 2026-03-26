@@ -401,7 +401,7 @@ void beaver::graphics::tilemap_by_layer(const beaver::tile::tilemap& tm,
 {
 	if (!tm._layers.first.contains(layer_name))
 	{
-		std::println("layer {} not found", layer_name);
+		SDL_Log("layer {} not found", layer_name.c_str());
 		return;
 	}
 	const auto& layer = tm.get_layer(layer_name);
