@@ -286,6 +286,10 @@ void beaver::scripting::bind_core(beaver::sdlgame& game, sol::state& lua)
 			{
 				Mix_Pause(channel);
 			});
+	lua.set_function("RESUME_CHANNEL", [&](int channel)
+			{
+                Mix_Resume(channel);
+			});
 	lua.set_function("HALT_CHANNEL", [&](int channel)
 			{
 				Mix_HaltChannel(channel);

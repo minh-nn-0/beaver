@@ -186,6 +186,9 @@ end
 function beaver.play_music(sound, loop)
 	PLAY_MUSIC(sound, loop or -1)
 end
+function beaver.resume_channel(channel)
+	RESUME_CHANNEL(channel or -1)
+end
 function beaver.pause_channel(channel)
 	PAUSE_CHANNEL(channel or -1)
 end

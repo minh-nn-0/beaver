@@ -301,6 +301,11 @@ namespace beaver::scripting
 												"playing", anim->_playing);
 				else return sol::nil;
 			});
+		tbl.set_function("unset_tileanimation", [&](std::size_t eid)
+			{
+				if (auto& anim = ecs. template get_component<tile_animation>(eid); anim.has_value())
+                    ecs.template reset_component<tile_animation>(eid);
+			});
 		tbl.set_function("set_tileanimation", [&](std::size_t eid, const sol::table& param) 
 				{
 					auto& anim = ecs.template get_or_set_component<tile_animation>(eid);
